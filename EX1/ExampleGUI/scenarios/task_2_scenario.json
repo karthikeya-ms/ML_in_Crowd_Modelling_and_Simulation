@@ -1,0 +1,22 @@
+{
+    "size" : {
+        "width" : 50,
+        "height" : 50
+    },
+    "pedestrians" : [
+        {
+            "x" : 5,
+            "y" : 25,
+            "speed" : 1
+        }
+    ],
+    "targets" : [
+        {
+            "x" : 25,
+            "y" : 25
+        }
+    ],
+    "obstacles" : [
+        
+    ]
+}
