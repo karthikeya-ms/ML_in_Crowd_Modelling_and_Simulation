@@ -67,7 +67,7 @@ class MainGUI():
 
         self.sc = Scenario(100, 100)
 
-        self.sc.draw_gridlines()
+        self.sc.draw_gridlines(self.canvas)
 
         self.sc.grid[23, 25] = Scenario.NAME2ID['TARGET']
         self.sc.grid[23, 45] = Scenario.NAME2ID['TARGET']
