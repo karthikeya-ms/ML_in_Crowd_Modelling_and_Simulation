@@ -1,6 +1,7 @@
 import scipy.spatial.distance
 from PIL import Image, ImageTk
 import numpy as np
+import json
 
 
 class Pedestrian:
@@ -48,7 +49,8 @@ class Pedestrian:
             if next_cell_distance > scenario.target_distance_grids[n_x, n_y]:
                 next_pos = (n_x, n_y)
                 next_cell_distance = scenario.target_distance_grids[n_x, n_y]
-        self._position = next_pos
+        if not next_pos in scenario.obstacles:
+            self._position = next_pos
 
 
 class Scenario:
@@ -75,18 +77,39 @@ class Scenario:
         ID2NAME[3]: 3
     }
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, file_path=None):
+        
+        if file_path is not None:
+            with open(file_path, 'r') as file:
+                file_json = json.load(file)
+                
+            width = file_json['size']['width']
+            height = file_json['size']['height']
+            
         if width < 1 or width > 1024:
             raise ValueError(f"Width {width} must be in [1, 1024].")
         if height < 1 or height > 1024:
             raise ValueError(f"Height {height} must be in [1, 1024].")
 
+        self.grid_image = None
+        self.pedestrians = []
+        self.obstacles = []
         self.width = width
         self.height = height
-        self.grid_image = None
         self.grid = np.zeros((width, height))
-        self.pedestrians = []
+        
+        if file_path is not None:
+            for t in file_json['targets']:
+                self.grid[t['x'], t['y']] = Scenario.NAME2ID['TARGET']
+            
+            for p in file_json['pedestrians']:
+                self.pedestrians.append(Pedestrian((p['x'], p['y']), p['speed']))
+            
+            for o in file_json['obstacles']:
+                self.obstacles.append((o['x'], o['y']))
+
         self.target_distance_grids = self.recompute_target_distances()
+
 
     def recompute_target_distances(self):
         self.target_distance_grids = self.update_target_grid()
@@ -189,6 +212,8 @@ class Scenario:
         for pedestrian in self.pedestrians:
             x, y = pedestrian.position
             pix[x, y] = Scenario.NAME2COLOR['PEDESTRIAN']
+        for x, y in self.obstacles:
+            pix[x, y] = Scenario.NAME2COLOR['OBSTACLE']
         im = im.resize(Scenario.GRID_SIZE, Image.NONE)
         self.grid_image = ImageTk.PhotoImage(im)
         canvas.itemconfigure(old_image_id, image=self.grid_image)
