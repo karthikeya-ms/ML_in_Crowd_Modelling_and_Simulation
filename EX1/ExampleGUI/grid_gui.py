@@ -4,7 +4,7 @@ class GridGUI:
     def __init__(self, master):
         self.master = master
         self.master.title("Cellular Automaton GUI")
-
+        #test
         
         # Constants for grid size and cell size
         self.GRID_SIZE = 5
