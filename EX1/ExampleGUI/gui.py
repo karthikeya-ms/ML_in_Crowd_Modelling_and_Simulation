@@ -62,6 +62,9 @@ class MainGUI():
 
         sc = Scenario(100, 100)
 
+        # Draw the grid first and then everything else on top, for aesthetics. Shouldn't be a problem until the appearance of many neighboring same-colored cells
+        sc.draw_grid(canvas)
+
         sc.grid[23, 25] = Scenario.NAME2ID['TARGET']
         sc.grid[23, 45] = Scenario.NAME2ID['TARGET']
         sc.grid[43, 55] = Scenario.NAME2ID['TARGET']

@@ -153,6 +153,23 @@ class Scenario:
         self.grid_image = ImageTk.PhotoImage(im)
         canvas.itemconfigure(old_image_id, image=self.grid_image)
 
+    def draw_grid(self, canvas):
+        """
+        Draws a grid on top of the canvas. Currently only supports the typical 100x100 grid; to be extended later.
+        :param canvas: the canvas holding the image.
+        """
+        base_x, base_y = 5, 50
+        d = 5
+        n = 99
+        for x in range(self.width):
+            for y in range(self.height):
+                start_v_x, start_v_y = base_x + x * d, base_y
+                end_v_x, end_v_y = base_x + x*d, base_y + n * d
+                canvas.create_line(start_v_x, start_v_y, end_v_x, end_v_y, fill='grey', width=1)
+                start_h_x, start_h_y = base_x, base_y + y * d
+                end_h_x, end_h_y = base_x + n * d, base_y + y * d
+                canvas.create_line(start_h_x, start_h_y, end_h_x, end_h_y, fill='grey', width=1)
+
     def to_image(self, canvas, old_image_id):
         """
         Creates a colored image based on the ids stored in self.grid.
@@ -160,6 +177,7 @@ class Scenario:
         :param canvas: the canvas that holds the image.
         :param old_image_id: the id of the old grid image.
         """
+
         im = Image.new(mode="RGB", size=(self.width, self.height))
         pix = im.load()
         for x in range(self.width):
