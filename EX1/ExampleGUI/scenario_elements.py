@@ -27,12 +27,7 @@ class Pedestrian:
         :param scenario: The scenario instance.
         :return: A list of neighbor cell indices (x,y) around the current position.
         """
-        return [
-            (int(x + self._position[0]), int(y + self._position[1]))
-            for x in [-1, 0, 1]
-            for y in [-1, 0, 1]
-            if 0 <= x + self._position[0] < scenario.width and 0 <= y + self._position[1] < scenario.height and np.abs(x) + np.abs(y) > 0
-        ]
+        return scenario.get_neighbours(self._position[0], self._position[1])
 
     def update_step(self, scenario):
         """
@@ -77,15 +72,30 @@ class Scenario:
         ID2NAME[3]: 3
     }
 
+    def get_neighbours(self, x_coord: int, y_coord: int):
+        """
+            Compute all neighbors in a 9 cell neighborhood of the current position.
+            :param x_coord: The x coordinate of the current position
+            :param y_coord: The y coordinate of the current position
+            :return: A list of neighbor cell indices (x,y) around the current position.
+            """
+        return [
+            (int(adjacent_x + x_coord), int(adjacent_y + y_coord))
+            for adjacent_x in [-1, 0, 1]
+            for adjacent_y in [-1, 0, 1]
+            if 0 <= adjacent_x + x_coord < self.width and 0 <= adjacent_y + y_coord < self.height and np.abs(
+                adjacent_x) + np.abs(adjacent_y) > 0
+        ]
+
     def __init__(self, width, height, file_path=None):
-        
+
         if file_path is not None:
             with open(file_path, 'r') as file:
                 file_json = json.load(file)
-                
+
             width = file_json['size']['width']
             height = file_json['size']['height']
-            
+
         if width < 1 or width > 1024:
             raise ValueError(f"Width {width} must be in [1, 1024].")
         if height < 1 or height > 1024:
@@ -97,19 +107,18 @@ class Scenario:
         self.width = width
         self.height = height
         self.grid = np.zeros((width, height))
-        
+
         if file_path is not None:
             for t in file_json['targets']:
                 self.grid[t['x'], t['y']] = Scenario.NAME2ID['TARGET']
-            
+
             for p in file_json['pedestrians']:
                 self.pedestrians.append(Pedestrian((p['x'], p['y']), p['speed']))
-            
+
             for o in file_json['obstacles']:
                 self.obstacles.append((o['x'], o['y']))
 
         self.target_distance_grids = self.recompute_target_distances()
-
 
     def recompute_target_distances(self):
         self.target_distance_grids = self.update_target_grid()
