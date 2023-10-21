@@ -25,7 +25,7 @@ class MainGUI:
         self.sc = Scenario(0, 0, file_path=path)
         self.sc.to_image(self.canvas, self.canvas_image)
 
-    def step_scenario(self):
+    def step_scenario(self, scenario, canvas, canvas_image):
         """
         Moves the simulation forward by one step, and visualizes the result.
 
@@ -34,8 +34,8 @@ class MainGUI:
             canvas (tkinter.Canvas): Add _description_
             canvas_image (missing _type_): Add _description_
         """
-        self.sc.update_step()
-        self.sc.to_image(self.canvas, self.canvas_image)
+        scenario.update_step()
+        scenario.to_image(canvas, canvas_image)
 
     def exit_gui(
         self,
@@ -73,21 +73,21 @@ class MainGUI:
         )
         self.canvas.pack()
 
-        self.sc = Scenario(100, 100)
+        sc = Scenario(100, 100)
 
         self.sc.grid[23, 25] = Scenario.NAME2ID["TARGET"]
         self.sc.grid[23, 45] = Scenario.NAME2ID["TARGET"]
         self.sc.grid[43, 55] = Scenario.NAME2ID["TARGET"]
         self.sc.recompute_target_distances()
 
-        self.sc.pedestrians = [
+        sc.pedestrians = [
             Pedestrian((31, 2), 2.3),
             Pedestrian((1, 10), 2.1),
             Pedestrian((80, 70), 2.1),
         ]
 
         # can be used to show pedestrians and targets
-        self.sc.to_image(self.canvas, self.canvas_image)
+        sc.to_image(canvas, canvas_image)
 
         # can be used to show the target grid instead
         # sc.target_grid_to_image(canvas, canvas_image)
