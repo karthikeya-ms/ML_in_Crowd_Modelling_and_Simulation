@@ -23,6 +23,7 @@ class MainGUI():
 
 
 
+
     def step_scenario(self):
         """
         Moves the simulation forward by one step, and visualizes the result.

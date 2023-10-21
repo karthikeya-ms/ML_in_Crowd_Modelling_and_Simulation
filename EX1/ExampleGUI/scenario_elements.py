@@ -184,7 +184,8 @@ class Scenario:
         cell_width = 5
         base_x, base_y = 5, 50
         # length of the grid lines
-        n_horizontal, n_vertical = 99, 99
+        n_horizontal, n_vertical = self.height, self.width
+        print(f'width: {self.width}, height: {self.height}, horizontal: {n_horizontal}, vertical: {n_vertical}')
         for x in range(self.width):
             for y in range(self.height):
                 # vertical grid line
@@ -203,7 +204,6 @@ class Scenario:
         :param canvas: the canvas that holds the image.
         :param old_image_id: the id of the old grid image.
         """
-
         im = Image.new(mode="RGB", size=(self.width, self.height))
         pix = im.load()
         for x in range(self.width):
