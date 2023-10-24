@@ -13,16 +13,16 @@ class MainGUI:
 
     def create_scenario(
         self,
-    ):
+    ) -> None:
         ScenarioCreator()
 
     def restart_scenario(
         self,
-    ):
-        print("restart not implemented yet")
+    ) -> None:
+        self.load_simulation("scenarios/default.json")
 
-    def load_simulation(self, path):
-        self.sc = Scenario(0, 0, file_path=path)
+    def load_simulation(self, path: str) -> None:
+        self.sc = Scenario(path)
         self.sc.to_image(self.canvas, self.canvas_image)
 
     def step_scenario(self):
@@ -30,7 +30,7 @@ class MainGUI:
         Moves the simulation forward by one step, and visualizes the result.
 
         Args:
-            scenario (scenario_elements.Scenario): Add _description_
+            scenario (scenario.Scenario): Add _description_
             canvas (tkinter.Canvas): Add _description_
             canvas_image (missing _type_): Add _description_
         """
@@ -39,7 +39,7 @@ class MainGUI:
 
     def exit_gui(
         self,
-    ):
+    ) -> None:
         """
         Close the GUI.
         """
@@ -47,7 +47,7 @@ class MainGUI:
 
     def start_gui(
         self,
-    ):
+    ) -> None:
         """
         Creates and shows a simple user interface with a menu and multiple buttons.
         Only one button works at the moment: "step simulation".
@@ -73,18 +73,7 @@ class MainGUI:
         )
         self.canvas.pack()
 
-        self.sc = Scenario(100, 100)
-
-        self.sc.grid[23, 25] = Scenario.NAME2ID["TARGET"]
-        self.sc.grid[23, 45] = Scenario.NAME2ID["TARGET"]
-        self.sc.grid[43, 55] = Scenario.NAME2ID["TARGET"]
-        self.sc.recompute_target_distances()
-
-        self.sc.pedestrians = [
-            Pedestrian((31, 2), 2.3),
-            Pedestrian((1, 10), 2.1),
-            Pedestrian((80, 70), 2.1),
-        ]
+        self.sc = Scenario("scenarios/default.json")
 
         # can be used to show pedestrians and targets
         self.sc.to_image(self.canvas, self.canvas_image)
@@ -101,7 +90,7 @@ class MainGUI:
         btn = Button(
             win,
             text="Load simulation",
-            command=lambda: self.load_simulation("scenarios/test_scenario.json"),
+            command=lambda: self.load_simulation("scenarios/default.json"),
         )
         btn.place(x=470, y=10)
 

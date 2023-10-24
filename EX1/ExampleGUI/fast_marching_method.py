@@ -5,14 +5,9 @@ import math
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from shared_types import Location
 
 INF = float("inf")
-
-
-@dataclass(kw_only=True, order=True)
-class _Location:
-    i: int  # row
-    j: int  # column
 
 
 class _CellStatus(str, Enum):
@@ -24,7 +19,7 @@ class _CellStatus(str, Enum):
 @dataclass(kw_only=True, order=True)
 class FMMCell:
     T: float
-    location: _Location
+    location: Location
     status: _CellStatus
 
 
@@ -33,12 +28,12 @@ class FastMarchingMethod:
         self,
         width: int,
         height: int,
-        starting_points: list[tuple[int, int]],
+        targets: list[tuple[int, int]],
         obstacles: list[tuple[int, int]],
     ):
         self.grid: list[list[FMMCell]] = [
             [
-                FMMCell(T=INF, location=_Location(i=i, j=j), status=_CellStatus.UNKNONW)
+                FMMCell(T=INF, location=(i, j), status=_CellStatus.UNKNONW)
                 for j in range(width)
             ]
             for i in range(height)
@@ -47,7 +42,7 @@ class FastMarchingMethod:
         self.width = width
         self._min_q: PriorityQueue[FMMCell] = PriorityQueue()
 
-        for x, y in starting_points:
+        for x, y in targets:
             i = y
             j = x
             self.grid[i][j].status = _CellStatus.NARROW_BAND
@@ -73,9 +68,9 @@ class FastMarchingMethod:
                     self._min_q.put(node)
                     node.T = self._solve_eikonal(node)
 
-    def _get_adjacent_nodes(self, location: _Location) -> dict[str, FMMCell]:
-        i = location.i
-        j = location.j
+    def _get_adjacent_nodes(self, location: Location) -> dict[str, FMMCell]:
+        i = location[0]
+        j = location[1]
         directions = ["nw", "n", "ne", "w", "e", "sw", "s", "se"]
         neighbors = [
             self.grid[i + off_i][j + off_j]
@@ -141,16 +136,16 @@ class FastMarchingMethod:
         hm = sns.heatmap(data=t_grid, annot=True)
         plt.show()
 
-    def get_next_move(self, x: int, y: int) -> tuple[int, int] | None:
+    def get_next_move(self, location: Location) -> tuple[int, int] | None:
+        x = location[0]
+        y = location[1]
         assert (
             0 <= x < self.width and 0 <= y < self.height
         ), f"Cell coordinates ({x}, {y}) are outside of the grid of sise {self.width}x{self.height} (0-indexed)"
         current_node = self.grid[y][x]
-        if current_node.T == 0:
-            return (x, y)
-        elif current_node.T == INF:
+        if current_node.T == INF or current_node.T == 0:
             return None
 
         adjacent = self._get_adjacent_nodes(current_node.location)
         minimum_node = min(adjacent.values(), key=lambda node: node.T)
-        return (minimum_node.location.j, minimum_node.location.i)
+        return (minimum_node.location[1], minimum_node.location[0])

@@ -1,100 +1,54 @@
 import scipy.spatial.distance
 from PIL import Image, ImageTk
-import numpy as np
-import json
-
-
-class Pedestrian:
-    """
-    Defines a single pedestrian.
-    """
-
-    def __init__(self, position, desired_speed):
-        self._position = position
-        self._desired_speed = desired_speed
-
-    @property
-    def position(self):
-        return self._position
-
-    @property
-    def desired_speed(self):
-        return self._desired_speed
-
-    def get_neighbors(self, scenario):
-        """
-        Compute all neighbors in a 9 cell neighborhood of the current position.
-        :param scenario: The scenario instance.
-        :return: A list of neighbor cell indices (x,y) around the current position.
-        """
-        return scenario.get_neighbours(self._position[0], self._position[1])
-
-    def update_step(self, scenario):
-        """
-        Moves to the cell with the lowest distance to the target.
-        This does not take obstacles or other pedestrians into account.
-        Pedestrians can occupy the same cell.
-
-        :param scenario: The current scenario instance.
-        """
-        neighbors = self.get_neighbors(scenario)
-        next_cell_distance = scenario.target_distance_grids[self._position[0]][self._position[1]]
-        next_pos = self._position
-        for (n_x, n_y) in neighbors:
-            if next_cell_distance > scenario.target_distance_grids[n_x, n_y]:
-                next_pos = (n_x, n_y)
-                next_cell_distance = scenario.target_distance_grids[n_x, n_y]
-        if not next_pos in scenario.obstacles:
-            self._position = next_pos
+from math import sqrt
+from shared_types import Location, Color
+from fast_marching_method import FastMarchingMethod
+from numpy.typing import NDArray
+from tkinter import Canvas
 
 
 class Scenario:
     """
     A scenario for a cellular automaton.
     """
-    GRID_SIZE = (500, 500)
-    ID2NAME = {
-        0: 'EMPTY',
-        1: 'TARGET',
-        2: 'OBSTACLE',
-        3: 'PEDESTRIAN'
-    }
-    NAME2COLOR = {
-        'EMPTY': (255, 255, 255),
-        'PEDESTRIAN': (255, 0, 0),
-        'TARGET': (0, 0, 255),
-        'OBSTACLE': (255, 0, 255)
-    }
-    NAME2ID = {
+
+    GRID_SIZE: Location = (500, 500)
+    ID2NAME: dict[int, str] = {0: "EMPTY", 1: "TARGET", 2: "OBSTACLE", 3: "PEDESTRIAN"}
+    NAME2ID: dict[str, int] = {
         ID2NAME[0]: 0,
         ID2NAME[1]: 1,
         ID2NAME[2]: 2,
-        ID2NAME[3]: 3
+        ID2NAME[3]: 3,
     }
 
-    def get_neighbours(self, x_coord: int, y_coord: int):
+    NAME2COLOR: dict[str, Color] = {
+        "EMPTY": (255, 255, 255),
+        "PEDESTRIAN": (255, 0, 0),
+        "TARGET": (0, 0, 255),
+        "OBSTACLE": (255, 0, 255),
+    }
+
+    def get_neighbours(self, x_coord: int, y_coord: int) -> list[Location]:
         """
-            Compute all neighbors in a 9 cell neighborhood of the current position.
-            :param x_coord: The x coordinate of the current position
-            :param y_coord: The y coordinate of the current position
-            :return: A list of neighbor cell indices (x,y) around the current position.
-            """
+        Compute all neighbors in a 9 cell neighborhood of the current position.
+        :param x_coord: The x coordinate of the current position
+        :param y_coord: The y coordinate of the current position
+        :return: A list of neighbor cell indices (x,y) around the current position.
+        """
         return [
-            (int(adjacent_x + x_coord), int(adjacent_y + y_coord))
+            (adjacent_x + x_coord, adjacent_y + y_coord)
             for adjacent_x in [-1, 0, 1]
             for adjacent_y in [-1, 0, 1]
-            if 0 <= adjacent_x + x_coord < self.width and 0 <= adjacent_y + y_coord < self.height and np.abs(
-                adjacent_x) + np.abs(adjacent_y) > 0
+            if 0 <= adjacent_x + x_coord < self.width
+            and 0 <= adjacent_y + y_coord < self.height
+            and np.abs(adjacent_x) + np.abs(adjacent_y) > 0
         ]
 
-    def __init__(self, width, height, file_path=None):
-
-        if file_path is not None:
-            with open(file_path, 'r') as file:
-                file_json = json.load(file)
-
-            width = file_json['size']['width']
-            height = file_json['size']['height']
+    def __init__(self, file_path: str):
+        with open(file_path, "r") as file:
+            file_json = json.load(file)
+            width = file_json["size"]["width"]
+            height = file_json["size"]["height"]
 
         if width < 1 or width > 1024:
             raise ValueError(f"Width {width} must be in [1, 1024].")
@@ -102,29 +56,38 @@ class Scenario:
             raise ValueError(f"Height {height} must be in [1, 1024].")
 
         self.grid_image = None
-        self.pedestrians = []
-        self.obstacles = []
+        self.pedestrians: list[Pedestrian] = []
+        self.targets: list[Location] = []
+        self.obstacles: list[Location] = []
         self.width = width
         self.height = height
-        self.grid = np.zeros((width, height))
+        self.grid: NDArray[np.int8] = np.zeros((width, height)).astype(np.int8)
 
-        if file_path is not None:
-            for t in file_json['targets']:
-                self.grid[t['x'], t['y']] = Scenario.NAME2ID['TARGET']
+        for t in file_json["targets"]:
+            self.grid[t["x"], t["y"]] = Scenario.NAME2ID["TARGET"]
+            self.targets.append((t["x"], t["y"]))
 
-            for p in file_json['pedestrians']:
-                self.pedestrians.append(Pedestrian((p['x'], p['y']), p['speed']))
+        for p in file_json["pedestrians"]:
+            self.pedestrians.append(Pedestrian((p["x"], p["y"]), p["speed"]))
 
-            for o in file_json['obstacles']:
-                self.obstacles.append((o['x'], o['y']))
+        for o in file_json["obstacles"]:
+            self.obstacles.append((o["x"], o["y"]))
+
+        self.fast_marching = FastMarchingMethod(
+            self.width, self.height, targets=self.targets, obstacles=self.obstacles
+        )
 
         self.target_distance_grids = self.recompute_target_distances()
 
-    def recompute_target_distances(self):
+    def recompute_target_distances(self) -> NDArray[np.float64]:
+        self.fast_marching = FastMarchingMethod(
+            self.width, self.height, targets=self.targets, obstacles=self.obstacles
+        )
+
         self.target_distance_grids = self.update_target_grid()
         return self.target_distance_grids
 
-    def update_target_grid(self):
+    def update_target_grid(self) -> NDArray[np.float64]:
         """
         Computes the shortest distance from every grid point to the nearest target cell.
         This does not take obstacles into account.
@@ -133,8 +96,10 @@ class Scenario:
         targets = []
         for x in range(self.width):
             for y in range(self.height):
-                if self.grid[x, y] == Scenario.NAME2ID['TARGET']:
-                    targets.append([y, x])  # y and x are flipped because they are in image space.
+                if self.grid[x, y] == Scenario.NAME2ID["TARGET"]:
+                    targets.append(
+                        [y, x]
+                    )  # y and x are flipped because they are in image space.
         if len(targets) == 0:
             return np.zeros((self.width, self.height))
 
@@ -153,23 +118,23 @@ class Scenario:
 
         return distances.reshape((self.width, self.height))
 
-    def update_step(self):
+    def update_step(self) -> None:
         """
         Updates the position of all pedestrians.
-        This does not take obstacles or other pedestrians into account.
+        This does not take other pedestrians into account.
         Pedestrians can occupy the same cell.
         """
         for pedestrian in self.pedestrians:
             pedestrian.update_step(self)
 
     @staticmethod
-    def cell_to_color(_id):
+    def cell_to_color(_id: int) -> Color:
         return Scenario.NAME2COLOR[Scenario.ID2NAME[_id]]
 
-    def target_grid_to_image(self, canvas, old_image_id):
+    def target_grid_to_image(self, canvas: Canvas, old_image_id: int) -> None:
         """
         Creates a colored image based on the distance to the target stored in
-        self.target_distance_gids.
+        self.fast_marching.
         :param canvas: the canvas that holds the image.
         :param old_image_id: the id of the old grid image.
         """
@@ -178,14 +143,16 @@ class Scenario:
         for x in range(self.width):
             for y in range(self.height):
                 target_distance = self.target_distance_grids[x][y]
-                pix[x, y] = (max(0, min(255, int(10 * target_distance) - 0 * 255)),
-                             max(0, min(255, int(10 * target_distance) - 1 * 255)),
-                             max(0, min(255, int(10 * target_distance) - 2 * 255)))
+                pix[x, y] = (
+                    max(0, min(255, int(10 * target_distance) - 0 * 255)),
+                    max(0, min(255, int(10 * target_distance) - 1 * 255)),
+                    max(0, min(255, int(10 * target_distance) - 2 * 255)),
+                )
         im = im.resize(Scenario.GRID_SIZE, Image.NONE)
         self.grid_image = ImageTk.PhotoImage(im)
         canvas.itemconfigure(old_image_id, image=self.grid_image)
 
-    def to_image(self, canvas, old_image_id):
+    def to_image(self, canvas: Canvas, old_image_id: int):
         """
         Creates a colored image based on the ids stored in self.grid.
         Pedestrians are drawn afterwards, separately.
@@ -199,9 +166,69 @@ class Scenario:
                 pix[x, y] = self.cell_to_color(self.grid[x, y])
         for pedestrian in self.pedestrians:
             x, y = pedestrian.position
-            pix[x, y] = Scenario.NAME2COLOR['PEDESTRIAN']
+            pix[x, y] = Scenario.NAME2COLOR["PEDESTRIAN"]
         for x, y in self.obstacles:
-            pix[x, y] = Scenario.NAME2COLOR['OBSTACLE']
+            pix[x, y] = Scenario.NAME2COLOR["OBSTACLE"]
         im = im.resize(Scenario.GRID_SIZE, Image.NONE)
         self.grid_image = ImageTk.PhotoImage(im)
         canvas.itemconfigure(old_image_id, image=self.grid_image)
+
+
+class Pedestrian:
+    """
+    Defines a single pedestrian.
+    """
+
+    def __init__(self, position: Location, desired_speed: float) -> None:
+        self._position = position
+        self._desired_speed = desired_speed
+        self._speed_offset: float = 0.0
+
+    @property
+    def position(self) -> Location:
+        return self._position
+
+    @property
+    def desired_speed(self) -> float:
+        return self._desired_speed
+
+    @property
+    def speed_offset(self) -> float:
+        return self._speed_offset
+
+    @speed_offset.setter
+    def speed_offset(self, speed_offset: float) -> None:
+        self._speed_offset = speed_offset
+
+    def get_neighbors(self, scenario: Scenario) -> list[Location]:
+        """
+        Compute all neighbors in a 9 cell neighborhood of the current position.
+        :param scenario: The scenario instance.
+        :return: A list of neighbor cell indices (x,y) around the current position.
+        """
+        return scenario.get_neighbours(self._position[0], self._position[1])
+
+    def update_step(self, scenario: Scenario) -> None:
+        """
+        Moves to the cell with the lowest distance to the target.
+        This does not take other pedestrians into account.
+        Pedestrians can occupy the same cell.
+
+        :param scenario: The current scenario instance.
+        """
+        step_speed = self.desired_speed + self.speed_offset
+        while True:
+            next_pos = scenario.fast_marching.get_next_move(self.position)
+            if next_pos is None:
+                break
+
+            distance = sqrt(
+                (self.position[0] - next_pos[0]) ** 2
+                + (self.position[1] - next_pos[1]) ** 2
+            )
+            if distance > step_speed:
+                break
+            else:
+                self._position = next_pos
+                step_speed -= distance
+        self.speed_offset = step_speed
