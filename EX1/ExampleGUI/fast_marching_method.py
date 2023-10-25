@@ -28,8 +28,8 @@ class FastMarchingMethod:
         self,
         width: int,
         height: int,
-        targets: list[tuple[int, int]],
-        obstacles: list[tuple[int, int]],
+        targets: set[tuple[int, int]],
+        obstacles: set[tuple[int, int]],
     ):
         self.grid: list[list[FMMCell]] = [
             [
