@@ -37,7 +37,7 @@ class ScenarioLoader:
                 i += 1
     
     def load_scenario(self, path):
-        new_scenario = Scenario(0, 0, file_path=path)
+        new_scenario = Scenario(path)
         self.gui.scenario = new_scenario
 
         self.window.destroy()
