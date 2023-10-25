@@ -93,7 +93,9 @@ class Scenario:
 
         self.grid_image = None
         self.pedestrians = []
-        self.obstacles = []
+        self.pedestrian_positions = {}
+        self.obstacles = set()
+        self.targets = set()
         self.width = width
         self.height = height
         self.grid = np.zeros((width, height))
@@ -101,15 +103,15 @@ class Scenario:
         if file_path is not None:
             for t in file_json['targets']:
                 self.grid[t['x'], t['y']] = Scenario.NAME2ID['TARGET']
+                self.targets.add((t['x'], t['y']))
             
             for p in file_json['pedestrians']:
                 self.pedestrians.append(Pedestrian((p['x'], p['y']), p['speed']))
             
             for o in file_json['obstacles']:
-                self.obstacles.append((o['x'], o['y']))
+                self.obstacles.add((o['x'], o['y']))
 
         self.target_distance_grids = self.recompute_target_distances()
-
 
     def recompute_target_distances(self):
         self.target_distance_grids = self.update_target_grid()
@@ -124,7 +126,7 @@ class Scenario:
         targets = []
         for x in range(self.width):
             for y in range(self.height):
-                if self.grid[x, y] == Scenario.NAME2ID['TARGET']:
+                if (x, y) in self.targets:
                     targets.append([y, x])  # y and x are flipped because they are in image space.
         if len(targets) == 0:
             return np.zeros((self.width, self.height))
@@ -153,46 +155,3 @@ class Scenario:
         for pedestrian in self.pedestrians:
             pedestrian.update_step(self)
 
-    @staticmethod
-    def cell_to_color(_id):
-        return Scenario.NAME2COLOR[Scenario.ID2NAME[_id]]
-
-    def target_grid_to_image(self, canvas, old_image_id):
-        """
-        Creates a colored image based on the distance to the target stored in
-        self.target_distance_gids.
-        :param canvas: the canvas that holds the image.
-        :param old_image_id: the id of the old grid image.
-        """
-        im = Image.new(mode="RGB", size=(self.width, self.height))
-        pix = im.load()
-        for x in range(self.width):
-            for y in range(self.height):
-                target_distance = self.target_distance_grids[x][y]
-                pix[x, y] = (max(0, min(255, int(10 * target_distance) - 0 * 255)),
-                             max(0, min(255, int(10 * target_distance) - 1 * 255)),
-                             max(0, min(255, int(10 * target_distance) - 2 * 255)))
-        im = im.resize(Scenario.GRID_SIZE, Image.NONE)
-        self.grid_image = ImageTk.PhotoImage(im)
-        canvas.itemconfigure(old_image_id, image=self.grid_image)
-
-    def to_image(self, canvas, old_image_id):
-        """
-        Creates a colored image based on the ids stored in self.grid.
-        Pedestrians are drawn afterwards, separately.
-        :param canvas: the canvas that holds the image.
-        :param old_image_id: the id of the old grid image.
-        """
-        im = Image.new(mode="RGB", size=(self.width, self.height))
-        pix = im.load()
-        for x in range(self.width):
-            for y in range(self.height):
-                pix[x, y] = self.cell_to_color(self.grid[x, y])
-        for pedestrian in self.pedestrians:
-            x, y = pedestrian.position
-            pix[x, y] = Scenario.NAME2COLOR['PEDESTRIAN']
-        for x, y in self.obstacles:
-            pix[x, y] = Scenario.NAME2COLOR['OBSTACLE']
-        im = im.resize(Scenario.GRID_SIZE, Image.NONE)
-        self.grid_image = ImageTk.PhotoImage(im)
-        canvas.itemconfigure(old_image_id, image=self.grid_image)
