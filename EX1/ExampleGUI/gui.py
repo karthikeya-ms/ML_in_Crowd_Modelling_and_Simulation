@@ -3,7 +3,7 @@ import tkinter
 from tkinter import Button, Canvas, Menu
 from scenario_elements import Scenario, Pedestrian
 from create_scenario import ScenarioCreator
-from grid_gui import ScenarioGUI
+from scenario_gui import ScenarioGUI
 from scenario_loader import ScenarioLoader
 
 
@@ -57,7 +57,7 @@ class MainGUI:
             canvas_image (missing _type_): Add _description_
         """
         self.scenario.update_step()
-        self.gui.update_grid()
+        self.gui.update_scenario()
 
     def exit_gui(
         self,
@@ -88,8 +88,8 @@ class MainGUI:
         file_menu.add_command(label="Close", command=self.exit_gui)
 
         grid_frame = tkinter.Frame(win, width=500, height=500)
-        self._scenario = Scenario(50, 50, file_path='scenarios/test_scenario.json')
-        self.gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True)
+        self._scenario = Scenario(50, 50, file_path='scenarios/form_scenario_1.json')
+        self.gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True, heatmap_mode=False)
         # can be used to show the target grid instead
         # sc.target_grid_to_image(canvas, canvas_image)
 
