@@ -80,46 +80,12 @@ class Scenario:
             self.width, self.height, targets=self.targets, obstacles=self.obstacles
         )
 
-        self.target_distance_grids = self.recompute_target_distances()
+        self.recompute_target_distances()
 
-    def recompute_target_distances(self) -> NDArray[np.float64]:
+    def recompute_target_distances(self) -> None:
         self.fast_marching = FastMarchingMethod(
             self.width, self.height, targets=self.targets, obstacles=self.obstacles
         )
-
-        self.target_distance_grids = self.update_target_grid()
-        return self.target_distance_grids
-
-    def update_target_grid(self) -> NDArray[np.float64]:
-        """
-        Computes the shortest distance from every grid point to the nearest target cell.
-        This does not take obstacles into account.
-        :returns: The distance for every grid cell, as a np.ndarray.
-        """
-        targets = []
-        for x in range(self.width):
-            for y in range(self.height):
-                if self.grid[x, y] == Scenario.NAME2ID["TARGET"]:
-                    targets.append(
-                        [y, x]
-                    )  # y and x are flipped because they are in image space.
-        if len(targets) == 0:
-            return np.zeros((self.width, self.height))
-
-        targets = np.row_stack(targets)
-        x_space = np.arange(0, self.width)
-        y_space = np.arange(0, self.height)
-        xx, yy = np.meshgrid(x_space, y_space)
-        positions = np.column_stack([xx.ravel(), yy.ravel()])
-
-        # after the target positions and all grid cell positions are stored,
-        # compute the pair-wise distances in one step with scipy.
-        distances = scipy.spatial.distance.cdist(targets, positions)
-
-        # now, compute the minimum over all distances to all targets.
-        distances = np.min(distances, axis=0)
-
-        return distances.reshape((self.width, self.height))
 
     def update_step(self) -> None:
         """
@@ -129,52 +95,6 @@ class Scenario:
         """
         for pedestrian in self.pedestrians:
             pedestrian.update_step(self)
-
-    @staticmethod
-    def cell_to_color(_id: int) -> Color:
-        return Scenario.NAME2COLOR[Scenario.ID2NAME[_id]]
-
-    def target_grid_to_image(self, canvas: Canvas, old_image_id: int) -> None:
-        """
-        Creates a colored image based on the distance to the target stored in
-        self.fast_marching.
-        :param canvas: the canvas that holds the image.
-        :param old_image_id: the id of the old grid image.
-        """
-        im = Image.new(mode="RGB", size=(self.width, self.height))
-        pix = im.load()
-        for x in range(self.width):
-            for y in range(self.height):
-                target_distance = self.target_distance_grids[x][y]
-                pix[x, y] = (
-                    max(0, min(255, int(10 * target_distance) - 0 * 255)),
-                    max(0, min(255, int(10 * target_distance) - 1 * 255)),
-                    max(0, min(255, int(10 * target_distance) - 2 * 255)),
-                )
-        im = im.resize(Scenario.GRID_SIZE, Image.NONE)
-        self.grid_image = ImageTk.PhotoImage(im)
-        canvas.itemconfigure(old_image_id, image=self.grid_image)
-
-    def to_image(self, canvas: Canvas, old_image_id: int):
-        """
-        Creates a colored image based on the ids stored in self.grid.
-        Pedestrians are drawn afterwards, separately.
-        :param canvas: the canvas that holds the image.
-        :param old_image_id: the id of the old grid image.
-        """
-        im = Image.new(mode="RGB", size=(self.width, self.height))
-        pix = im.load()
-        for x in range(self.width):
-            for y in range(self.height):
-                pix[x, y] = self.cell_to_color(self.grid[x, y])
-        for pedestrian in self.pedestrians:
-            x, y = pedestrian.position
-            pix[x, y] = Scenario.NAME2COLOR["PEDESTRIAN"]
-        for x, y in self.obstacles:
-            pix[x, y] = Scenario.NAME2COLOR["OBSTACLE"]
-        im = im.resize(Scenario.GRID_SIZE, Image.NONE)
-        self.grid_image = ImageTk.PhotoImage(im)
-        canvas.itemconfigure(old_image_id, image=self.grid_image)
 
 
 class Pedestrian:
