@@ -3,6 +3,8 @@ import tkinter
 from tkinter import Button, Canvas, Menu
 from scenario_elements import Scenario, Pedestrian
 from create_scenario import ScenarioCreator
+from grid_gui import ScenarioGUI
+from scenario_loader import ScenarioLoader
 
 
 class MainGUI:
@@ -10,6 +12,15 @@ class MainGUI:
     Defines a simple graphical user interface.
     To start, use the `start_gui` method.
     """
+    
+    @property
+    def scenario(self):
+        return self._scenario
+
+    @scenario.setter
+    def scenario(self, scenario):
+        self.gui.scenario = scenario
+        self._scenario = scenario
 
     def create_scenario(
         self,
@@ -20,12 +31,23 @@ class MainGUI:
         self,
     ):
         print("restart not implemented yet")
+    
+    def play(
+        self, button
+    ):
+        button.config(text="Pause", command=lambda: self.pause(button))
+        print("play not implemented yet")
+    
+    def pause(
+        self, button
+    ):
+        button.config(text="Play", command=lambda: self.play(button))
+        print("pause not implemented yet")
 
-    def load_simulation(self, path):
-        self.sc = Scenario(0, 0, file_path=path)
-        self.sc.to_image(self.canvas, self.canvas_image)
+    def load_simulation(self):
+        ScenarioLoader(self)
 
-    def step_scenario(self, scenario, canvas, canvas_image):
+    def step_scenario(self):
         """
         Moves the simulation forward by one step, and visualizes the result.
 
@@ -34,8 +56,8 @@ class MainGUI:
             canvas (tkinter.Canvas): Add _description_
             canvas_image (missing _type_): Add _description_
         """
-        scenario.update_step()
-        scenario.to_image(canvas, canvas_image)
+        self.scenario.update_step()
+        self.gui.update_grid()
 
     def exit_gui(
         self,
@@ -54,7 +76,7 @@ class MainGUI:
         Also creates a rudimentary, fixed Scenario instance with three Pedestrian instances and multiple targets.
         """
         win = tkinter.Tk()
-        win.geometry("600x600")  # setting the size of the window
+        win.geometry("700x700")  # setting the size of the window
         win.title("Cellular Automata GUI")
 
         menu = Menu(win)
@@ -65,44 +87,29 @@ class MainGUI:
         file_menu.add_command(label="Restart", command=self.restart_scenario)
         file_menu.add_command(label="Close", command=self.exit_gui)
 
-        self.canvas = Canvas(
-            win, width=Scenario.GRID_SIZE[0], height=Scenario.GRID_SIZE[1]
-        )  # creating the canvas
-        self.canvas_image = self.canvas.create_image(
-            5, 50, image=None, anchor=tkinter.NW
-        )
-        self.canvas.pack()
-
-        sc = Scenario(100, 100)
-
-        self.sc.grid[23, 25] = Scenario.NAME2ID["TARGET"]
-        self.sc.grid[23, 45] = Scenario.NAME2ID["TARGET"]
-        self.sc.grid[43, 55] = Scenario.NAME2ID["TARGET"]
-        self.sc.recompute_target_distances()
-
-        sc.pedestrians = [
-            Pedestrian((31, 2), 2.3),
-            Pedestrian((1, 10), 2.1),
-            Pedestrian((80, 70), 2.1),
-        ]
-
-        # can be used to show pedestrians and targets
-        sc.to_image(canvas, canvas_image)
-
+        grid_frame = tkinter.Frame(win, width=500, height=500)
+        self._scenario = Scenario(50, 50, file_path='scenarios/test_scenario.json')
+        self.gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True)
         # can be used to show the target grid instead
         # sc.target_grid_to_image(canvas, canvas_image)
 
-        btn = Button(win, text="Step simulation", command=lambda: self.step_scenario())
-        btn.place(x=20, y=10)
-        btn = Button(win, text="Restart simulation", command=self.restart_scenario)
-        btn.place(x=160, y=10)
-        btn = Button(win, text="Create simulation", command=self.create_scenario)
-        btn.place(x=315, y=10)
-        btn = Button(
-            win,
-            text="Load simulation",
-            command=lambda: self.load_simulation("scenarios/test_scenario.json"),
-        )
-        btn.place(x=470, y=10)
+        top_bar = tkinter.Frame(win, height=50, width=1000)
 
+        btn = Button(top_bar, text="Step simulation", command=self.step_scenario)
+        btn.grid(row=0, column=0)
+        btn = Button(top_bar, text="Restart simulation", command=self.restart_scenario)
+        btn.grid(row=0, column=1)
+        btn = Button(top_bar, text="Create simulation", command=self.create_scenario)
+        btn.grid(row=0, column=2)
+        btn = Button(
+            top_bar,
+            text="Load simulation",
+            command=self.load_simulation,
+        )
+        btn.grid(row=0, column=3)
+        btn = Button(top_bar, text="Play", command=lambda: self.play(btn))
+        btn.grid(row=0, column=4)
+
+        top_bar.pack(side=tkinter.TOP)
+        grid_frame.pack(side=tkinter.TOP)
         win.mainloop()
