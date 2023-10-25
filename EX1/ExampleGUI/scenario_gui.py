@@ -31,7 +31,7 @@ class LeftMouseButton:
             The id, a string, of the current hold event. It's set to None after release.
     """
     
-    def __init__(self, gui: ScenarioGUI, hold_seconds: float):
+    def __init__(self, gui: ScenarioGUI, hold_seconds: float) -> None:
         """Creates an instance of the LeftMouseButton class. 
 
         Args:
@@ -46,7 +46,7 @@ class LeftMouseButton:
         self.press_timestamp = None
         self.hold_event_id = None
     
-    def press(self, event: tk.Event):
+    def press(self, event: tk.Event) -> None:
         """Handles all logic related to a left press.
 
         Args:
@@ -55,7 +55,7 @@ class LeftMouseButton:
         self.press_timestamp = time.time()
         self.hold_event_id = self.gui.master.after(int(1000* ScenarioGUI.OBSTACLE_HOLD_SECONDS), self.drag, event)
     
-    def drag(self, event: tk.Event):
+    def drag(self, event: tk.Event) -> None:
         """
             Handles all logic related to a drag event. As this part of the logic is identical 
             to a hold this method also handles hold calls (set by a call to after).
@@ -131,7 +131,7 @@ class ScenarioGUI:
     
     OBSTACLE_HOLD_SECONDS = 0.5
 
-    def __init__(self, master: tk.Frame, scen: Scenario, grid_mode: bool =False, heatmap_mode: bool =False):
+    def __init__(self, master: tk.Frame, scen: Scenario, grid_mode: bool =False, heatmap_mode: bool =False) -> None:
         """Creates an instance of the ScenarioGUI class. Also creates the canvas for the simulation and draws it.
 
         Args:
@@ -175,7 +175,7 @@ class ScenarioGUI:
         return self._scenario
 
     @scenario.setter
-    def scenario(self, scen: Scenario):
+    def scenario(self, scen: Scenario) -> None:
         """
             void : The setter for the scenario property.
             
@@ -226,7 +226,7 @@ class ScenarioGUI:
         return max(ScenarioGUI.MIN_ELEMENT_RADIUS, self.cell_side*0.95 /2)
 
     @property
-    def obstacle_side(self):
+    def obstacle_side(self) -> None:
         """
             float : The side of an obstacle in screen units.
             
@@ -237,7 +237,7 @@ class ScenarioGUI:
         """
         return max(ScenarioGUI.MIN_OBSTACLE_SIDE, self.cell_side)
 
-    def draw_scenario(self):
+    def draw_scenario(self) -> None:
         """
             Draws the grid from an empty canvas. This method should only be invoked when the grid itself changes, 
             for example, when the number of cells is updated or the scenario itself is changed. 
@@ -253,7 +253,7 @@ class ScenarioGUI:
 
         self.update_scenario()
     
-    def draw_grid(self):
+    def draw_grid(self) -> None:
         """Draws the grid.
         """
         for i in range(1, self.grid_side):
@@ -264,12 +264,12 @@ class ScenarioGUI:
             y = i*self.cell_side
             self.canvas.create_line(0, y, self.canvas_side, y, fill=ScenarioGUI.SEPARATOR_COLOR)
 
-    def draw_target_heatmap(self):
+    def draw_target_heatmap(self) -> None:
         """
             Draws the target heatmap on the canvas. 
             This heatmap visualizes the distance from each cell to the nearest target.
         """
-        def get_hex_number(target_distance: float, color_term: str):
+        def get_hex_number(target_distance: float, color_term: str) -> str:
             h = hex(max(0, min(255, int(10 * target_distance) - color_term * 255)))[2:]
             
             if len(h) == 1:
@@ -292,7 +292,7 @@ class ScenarioGUI:
                     tag=ScenarioGUI.HEATMAP_TAG
                 )
 
-    def update_scenario(self):
+    def update_scenario(self) -> None:
         """
             All elements on the grid are redrawn in their updated positions. 
             This methods does not perform an update step in the scenario, 
@@ -310,7 +310,7 @@ class ScenarioGUI:
         for x, y in self.scenario.obstacles:
             self.draw_obstacle(x, y)
 
-    def draw_pedestrian(self, x: int, y: int):
+    def draw_pedestrian(self, x: int, y: int) -> None:
         """Uses the position of the pedestrian in the grid to draw it on the canvas.
 
         Args:
@@ -327,7 +327,7 @@ class ScenarioGUI:
             tag=ScenarioGUI.ELEMENT_TAG
         )
 
-    def draw_target(self, x, y):
+    def draw_target(self, x, y) -> None:
         """Uses the position of the target in the grid to draw it on the canvas.
 
         Args:
@@ -344,7 +344,7 @@ class ScenarioGUI:
             tag=ScenarioGUI.ELEMENT_TAG
             )
 
-    def draw_obstacle(self, x, y):
+    def draw_obstacle(self, x, y) -> None:
         """Uses the position of the obstacle in the grid to draw it on the canvas.
 
         Args:
@@ -360,7 +360,7 @@ class ScenarioGUI:
             tag=ScenarioGUI.ELEMENT_TAG
         )
 
-    def on_right_click(self, event: tk.Event):
+    def on_right_click(self, event: tk.Event) -> None:
         """
             Handler for a right click event. Will calculate the cell clicked 
             and add a target in it if possible (no other elements in it).
@@ -376,13 +376,13 @@ class ScenarioGUI:
             pos in self.scenario.obstacles
         ):
             self.scenario.targets.add(pos)
-            self.scenario.target_distance_grids = self.scenario.recompute_target_distances()
+            self.scenario.recompute_target_distances()
             if self.heatmap_mode:
                 self.draw_scenario()
             else:
                 self.update_scenario()
 
-    def on_left_press(self, event: tk.Event):
+    def on_left_press(self, event: tk.Event) -> None:
         """
             Handler for a left press event. It initializes all structures needed to differentiate 
             between a left click, that adds a pedestrian, and a left hold/drag, that adds obstacles.
@@ -393,7 +393,7 @@ class ScenarioGUI:
         self.left_mouse_button.press(event)
         self.pedestrian_pos = { pedestrian.position for pedestrian in self.scenario.pedestrians }
 
-    def on_left_drag(self, event: tk.Event):
+    def on_left_drag(self, event: tk.Event) -> None:
         """
             Handler for a <B1-Motion> event which is triggered when the mouse moves while the left button is pressed.
             This handler detects wether the current invocation represents a drag. 
@@ -407,7 +407,7 @@ class ScenarioGUI:
 
         self.on_hold_or_drag(event)
 
-    def on_left_release(self, event: tk.Event):
+    def on_left_release(self, event: tk.Event) -> None:
         """
             Handler for the release of the left mouse button. 
             It will detect if this event represents a click. 
@@ -424,11 +424,15 @@ class ScenarioGUI:
                 pos in self.scenario.obstacles
                 ):
             self.scenario.pedestrians.append(Pedestrian(pos,1))
+        else:
+            # If the release doesn't represent a click than an obstacle was added
+            # and the target distances must be recalculated
+            self.scenario.recompute_target_distances()
 
         self.pedestrian_pos = None
         self.update_scenario()
 
-    def on_hold_or_drag(self, event: tk.Event):
+    def on_hold_or_drag(self, event: tk.Event) -> None:
         """
             Handler for hold or drag "events". This handler will not be invoked directly by tkinter, 
             but is, instead, a helper invoked every time a hold or a drag are detected to add an obstacle.
