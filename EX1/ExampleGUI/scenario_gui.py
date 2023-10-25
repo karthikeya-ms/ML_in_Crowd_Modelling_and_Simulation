@@ -277,9 +277,12 @@ class ScenarioGUI:
 
             return h
         
+        self.canvas.delete(ScenarioGUI.HEATMAP_TAG)
         for x in range(self.grid_side):
             for y in range(self.grid_side):
-                target_distance = self.scenario.target_distance_grids[x][y]
+                target_distance = self.scenario.fast_marching.grid[y][x].T
+                if target_distance == float("inf"):
+                    target_distance = 0
                 r = get_hex_number(target_distance, 0)
                 g = get_hex_number(target_distance, 1)
                 b = get_hex_number(target_distance, 2)
@@ -430,7 +433,10 @@ class ScenarioGUI:
             self.scenario.recompute_target_distances()
 
         self.pedestrian_pos = None
-        self.update_scenario()
+        if self.heatmap_mode:
+            self.draw_scenario()
+        else:
+            self.update_scenario()
 
     def on_hold_or_drag(self, event: tk.Event) -> None:
         """
