@@ -90,7 +90,7 @@ class MainGUI:
         btn = Button(
             win,
             text="Load simulation",
-            command=lambda: self.load_simulation("scenarios/default.json"),
+            command=lambda: self.load_simulation("scenarios/task_3_scenario.json"),
         )
         btn.place(x=470, y=10)
 

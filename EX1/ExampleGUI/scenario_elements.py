@@ -5,6 +5,9 @@ from shared_types import Location, Color
 from fast_marching_method import FastMarchingMethod
 from numpy.typing import NDArray
 from tkinter import Canvas
+import numpy as np
+import json
+
 
 
 class Scenario:
