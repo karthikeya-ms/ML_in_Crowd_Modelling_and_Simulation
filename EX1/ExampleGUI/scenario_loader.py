@@ -1,8 +1,9 @@
 import os
 import tkinter
 
-from scenario_elements import Scenario
 
+from scenario_elements import Scenario
+from create_scenario import handle_width_resize
 
 class ScenarioLoader:
     
@@ -11,6 +12,7 @@ class ScenarioLoader:
         self.gui = gui
 
         scenario_selector = tkinter.Tk()
+        scenario_selector.geometry("500x500")
         scenario_selector.title("Simulation Selector")
 
         self.window = scenario_selector
@@ -26,14 +28,27 @@ class ScenarioLoader:
 
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        label = tkinter.Label(canvas, text="Avalable scenarios:", font=("Helvetica 17 bold"))
-        label.place(x=5, y=5)
+        content_frame = tkinter.Frame(canvas)
+        content_frame.pack(fill="both", anchor="nw")
+
+        content_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all")),
+        )
+        
+        canvas.create_window(
+            (0, 0), window=content_frame, anchor="nw", tags=("content_frame",)
+        )
+        canvas.bind("<Configure>", handle_width_resize)
+
+        label = tkinter.Label(content_frame, text="Avalable scenarios:", font=("Helvetica 17 bold"))
+        label.pack()
 
         i = 0
         for scenario_file in os.listdir("./scenarios"):
             if scenario_file.endswith(".json"):
-                btn = tkinter.Button(canvas, text=scenario_file[:-5], command=lambda path=f"scenarios/{scenario_file}": self.load_scenario(path))
-                btn.place(x=15, y=i*30 + 50)
+                btn = tkinter.Button(content_frame, text=scenario_file[:-5], command=lambda path=f"scenarios/{scenario_file}": self.load_scenario(path))
+                btn.pack()
                 i += 1
     
     def load_scenario(self, path):
