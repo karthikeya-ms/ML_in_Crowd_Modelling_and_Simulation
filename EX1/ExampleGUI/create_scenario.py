@@ -95,11 +95,11 @@ def handle_width_resize(event):
 
 class ScenarioCreator:
     def __init__(self):
-        win = tk.Tk()
-        win.geometry("500x500")
-        win.title("Scenario Creator")
+        self.win = tk.Tk()
+        self.win.geometry("500x500")
+        self.win.title("Scenario Creator")
 
-        main_frame = tk.Frame(win)
+        main_frame = tk.Frame(self.win)
         main_frame.pack(fill="both", expand=True)
 
         canvas = tk.Canvas(main_frame)
@@ -158,6 +158,13 @@ class ScenarioCreator:
             width=8,
             command=self.save,
         ).pack(fill="x", padx=100)
+        
+        tk.Button(
+            self.content_frame,
+            text=f"Save Scenario and Close",
+            width=8,
+            command=self.save_and_close,
+        ).pack(fill="x", padx=100)
 
     def save(self):
         size_dict: ENTRY_TYPE = {
@@ -203,3 +210,7 @@ class ScenarioCreator:
 
         with open(f"scenarios/{scenario_name}.json", "w") as out:
             out.write(scenario_json)
+
+    def save_and_close(self):
+        self.save()
+        self.win.destroy()
