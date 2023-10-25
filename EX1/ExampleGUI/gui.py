@@ -13,6 +13,11 @@ class MainGUI:
     To start, use the `start_gui` method.
     """
     
+    def __init__(self):
+        self._scenario = Scenario(file_path='scenarios/form_scenario_1.json')
+        self.gui = None
+    
+    
     @property
     def scenario(self):
         return self._scenario
@@ -24,13 +29,13 @@ class MainGUI:
 
     def create_scenario(
         self,
-    ):
+    ) -> None:
         ScenarioCreator()
 
     def restart_scenario(
         self,
-    ):
-        print("restart not implemented yet")
+    ) -> None:
+        self.scenario = Scenario("scenarios/default.json")
     
     def play(
         self, button
@@ -52,7 +57,7 @@ class MainGUI:
         Moves the simulation forward by one step, and visualizes the result.
 
         Args:
-            scenario (scenario_elements.Scenario): Add _description_
+            scenario (scenario.Scenario): Add _description_
             canvas (tkinter.Canvas): Add _description_
             canvas_image (missing _type_): Add _description_
         """
@@ -61,7 +66,7 @@ class MainGUI:
 
     def exit_gui(
         self,
-    ):
+    ) -> None:
         """
         Close the GUI.
         """
@@ -69,7 +74,7 @@ class MainGUI:
 
     def start_gui(
         self,
-    ):
+    ) -> None:
         """
         Creates and shows a simple user interface with a menu and multiple buttons.
         Only one button works at the moment: "step simulation".
@@ -88,10 +93,7 @@ class MainGUI:
         file_menu.add_command(label="Close", command=self.exit_gui)
 
         grid_frame = tkinter.Frame(win, width=500, height=500)
-        self._scenario = Scenario(50, 50, file_path='scenarios/form_scenario_1.json')
         self.gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True, heatmap_mode=False)
-        # can be used to show the target grid instead
-        # sc.target_grid_to_image(canvas, canvas_image)
 
         top_bar = tkinter.Frame(win, height=50, width=1000)
 
