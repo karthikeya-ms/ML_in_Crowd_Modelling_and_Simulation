@@ -9,7 +9,7 @@ class ScenarioLoader:
     
     def __init__(self, gui):
 
-        self.gui = gui
+        self.main_gui = gui
 
         scenario_selector = tkinter.Tk()
         scenario_selector.geometry("500x500")
@@ -53,7 +53,7 @@ class ScenarioLoader:
     
     def load_scenario(self, path):
         new_scenario = Scenario(path)
-        self.gui.scenario = new_scenario
+        self.main_gui.scenario = new_scenario
 
         self.window.destroy()
 

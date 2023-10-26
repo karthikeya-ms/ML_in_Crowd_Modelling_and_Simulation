@@ -12,19 +12,19 @@ class MainGUI:
     Defines a simple graphical user interface.
     To start, use the `start_gui` method.
     """
-    
+
     def __init__(self):
         self._scenario = Scenario(file_path='scenarios/form_scenario_1.json')
-        self.gui = None
-    
-    
+        self.scenario_gui = None
+
+
     @property
     def scenario(self):
         return self._scenario
 
     @scenario.setter
     def scenario(self, scenario):
-        self.gui.scenario = scenario
+        self.scenario_gui.scenario = scenario
         self._scenario = scenario
 
     def create_scenario(
@@ -62,7 +62,7 @@ class MainGUI:
             canvas_image (missing _type_): Add _description_
         """
         self.scenario.update_step()
-        self.gui.update_scenario()
+        self.scenario_gui.update_scenario()
 
     def exit_gui(
         self,
@@ -93,7 +93,7 @@ class MainGUI:
         file_menu.add_command(label="Close", command=self.exit_gui)
 
         grid_frame = tkinter.Frame(win, width=500, height=500)
-        self.gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True, heatmap_mode=False)
+        self.scenario_gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True, heatmap_mode=False)
 
         top_bar = tkinter.Frame(win, height=50, width=1000)
 
