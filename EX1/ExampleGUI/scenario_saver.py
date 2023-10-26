@@ -1,17 +1,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-
-import os.path
-import tkinter
-
-
-from scenario_elements import Scenario
-import json
-
-
 if TYPE_CHECKING:
     from gui import MainGUI
 
+import os.path
+import tkinter
+from tkinter import messagebox
+from scenario_elements import Scenario
+import json
 
 
 # Note: For cleaner code, normally we'd use json.JSONEncoder. But this is a simple enough case that we don't need to.
@@ -61,7 +57,7 @@ class ScenarioSaver:
         self.main_gui = main_gui
 
         self.window = tkinter.Tk()
-        self.window.geometry("500x200")
+        self.window.geometry("450x100")
         self.window.title("Save Scenario")
 
         label = tkinter.Label(self.window, text="Save scenario as:", font="Helvetica 17 bold")
@@ -83,9 +79,12 @@ class ScenarioSaver:
         @param filename:     Desired filename save the .json ending. Must not be empty!
         @param json_content: Scenario as json string
         """
-        # TODO later, UI notification message
+
         if not filename:
-            print('Filename cannot be empty.')
+            messagebox.showerror('Error', 'Filename must not be empty!')
+            return
+        if '/' in filename or '\\' in filename:
+            messagebox.showerror('Error', 'Filename must not contain slashes!')
             return
 
         if not filename.endswith('.json'):
@@ -93,18 +92,18 @@ class ScenarioSaver:
 
         filename = f'scenarios/{filename}'
 
-        # TODO Later, yes/no dialog to confirm overwriting
         if os.path.exists(filename):
-            print(f'File {filename} already exists. Overwriting.')
+            if not messagebox.askyesno('File exists', f'File {filename} already exists. Overwrite?'):
+                return
 
         print(f'Saving scenario as {filename}')
 
         try:
             with open(filename, 'w') as f:
                 f.write(json_content)
-        # TODO UI notification message
         except Exception as e:
-            print(f'Error saving scenario: {e}')
+            messagebox.showerror(f'Error saving scenario: {e}')
             return
 
         self.window.destroy()
+        messagebox.showinfo('Success', f'Saved scenario as {filename}')
