@@ -475,6 +475,19 @@ class ScenarioGUI:
             self.scenario.obstacles.add(obstacle)
             self.update_scenario()
 
+    def activate_grid_mode(self):
+        self._grid_mode = True
+        self._heatmap_mode = False
+        self.draw_scenario()
+    
+    def activate_heatmap_mode(self):
+        self._heatmap_mode = True
+        self.draw_scenario()
+    
+    def activate_free_range_mode(self):
+        self._grid_mode = False
+        self._heatmap_mode = False
+        self.draw_scenario()
 
 if __name__ == "__main__":
     root = tk.Tk()

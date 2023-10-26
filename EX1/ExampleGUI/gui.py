@@ -16,6 +16,7 @@ class MainGUI:
     def __init__(self):
         self._scenario = Scenario(file_path='scenarios/form_scenario_1.json')
         self.scenario_gui = None
+        self.scenario_gui_mode = None
 
 
     @property
@@ -49,8 +50,21 @@ class MainGUI:
         button.config(text="Play", command=lambda: self.play(button))
         print("pause not implemented yet")
 
+    def change_scen_gui_mode(
+        self, *args
+    ):
+        if self.scenario_gui_mode.get() == 'Free Range':
+            self.scenario_gui.activate_free_range_mode()
+        elif self.scenario_gui_mode.get() == 'Grid':
+            self.scenario_gui.activate_grid_mode()
+        elif self.scenario_gui_mode.get() == 'Heatmap':
+            self.scenario_gui.activate_heatmap_mode()
+
     def load_simulation(self):
         ScenarioLoader(self)
+    
+    def save_scenario(self):
+        print('Save scenario not implemented yet ')
 
     def step_scenario(self):
         """
@@ -97,20 +111,35 @@ class MainGUI:
 
         top_bar = tkinter.Frame(win, height=50, width=1000)
 
-        btn = Button(top_bar, text="Step simulation", command=self.step_scenario)
-        btn.grid(row=0, column=0)
-        btn = Button(top_bar, text="Restart simulation", command=self.restart_scenario)
-        btn.grid(row=0, column=1)
-        btn = Button(top_bar, text="Create simulation", command=self.create_scenario)
-        btn.grid(row=0, column=2)
+        btn = Button(top_bar, text="Step Simulation", command=self.step_scenario)
+        btn.grid(row=0, column=0, sticky='nswe')
+        btn = Button(top_bar, text="Restart Simulation", command=self.restart_scenario)
+        btn.grid(row=0, column=1, sticky='nswe')
+        btn = Button(top_bar, text="Create Simulation", command=self.create_scenario)
+        btn.grid(row=0, column=2, sticky='nswe')
         btn = Button(
             top_bar,
-            text="Load simulation",
+            text="Load Simulation",
             command=self.load_simulation,
         )
-        btn.grid(row=0, column=3)
-        btn = Button(top_bar, text="Play", command=lambda: self.play(btn))
-        btn.grid(row=0, column=4)
+        btn.grid(row=0, column=3, sticky='nswe')
+        
+        self.scenario_gui_mode = tkinter.StringVar(top_bar, 'Grid')
+        self.scenario_gui_mode.trace('w', self.change_scen_gui_mode)
+        
+        dropdown_label = tkinter.Label(top_bar, text='Mode Selector')
+        dropdown_label.grid(row=1, column=0, sticky='nswe')
+        
+        dropdown = tkinter.OptionMenu(top_bar, self.scenario_gui_mode, 'Free Range', 'Grid', 'Heatmap')
+        dropdown.grid(row=1, column=1, sticky='nswe')
+        
+        
+        
+        btn_play = Button(top_bar, text="Play", command=lambda: self.play(btn_play))
+        btn_play.grid(row=1, column=2, sticky='nswe')
+        
+        btn = Button(top_bar, text="Save Scenario", command=self.save_scenario)
+        btn.grid(row=1, column=3, sticky='nswe')
 
         top_bar.pack(side=tkinter.TOP)
         grid_frame.pack(side=tkinter.TOP)
