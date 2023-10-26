@@ -5,6 +5,7 @@ from scenario_elements import Scenario, Pedestrian
 from create_scenario import ScenarioCreator
 from scenario_gui import ScenarioGUI
 from scenario_loader import ScenarioLoader
+from scenario_saver import ScenarioSaver
 
 
 class MainGUI:
@@ -64,7 +65,7 @@ class MainGUI:
         ScenarioLoader(self)
     
     def save_scenario(self):
-        print('Save scenario not implemented yet ')
+        ScenarioSaver(self)
 
     def step_scenario(self):
         """
