@@ -41,7 +41,7 @@ class ScenarioLoader:
         )
         canvas.bind("<Configure>", handle_width_resize)
 
-        label = tkinter.Label(content_frame, text="Avalable scenarios:", font=("Helvetica 17 bold"))
+        label = tkinter.Label(content_frame, text="Available scenarios:", font="Helvetica 17 bold")
         label.pack()
 
         i = 0
