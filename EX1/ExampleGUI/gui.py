@@ -1,5 +1,7 @@
 import sys
 import tkinter
+import time
+import threading as t
 from tkinter import Button, Canvas, Menu
 from scenario_elements import Scenario, Pedestrian
 from create_scenario import ScenarioCreator
@@ -17,6 +19,9 @@ class MainGUI:
         self._scenario = Scenario(file_path='scenarios/form_scenario_1.json')
         self.scenario_gui = None
         self.scenario_gui_mode = None
+
+        self.is_playing = True
+        self.play_thread = None
 
 
     @property
@@ -37,18 +42,26 @@ class MainGUI:
         self,
     ) -> None:
         self.scenario = Scenario("scenarios/default.json")
-    
+
     def play(
         self, button
-    ):
+    ):      
         button.config(text="Pause", command=lambda: self.pause(button))
-        print("play not implemented yet")
-    
+        self.is_playing = True
+        self.play_thread = t.Thread(target=self.play_loop)
+        self.play_thread.start()
+
+    def play_loop(self):
+        while self.is_playing:
+            time.sleep(0.5)
+            self.step_scenario()
+
     def pause(
         self, button
     ):
         button.config(text="Play", command=lambda: self.play(button))
-        print("pause not implemented yet")
+        self.is_playing = False
+        self.play_thread = None
 
     def change_scen_gui_mode(
         self, *args
@@ -62,7 +75,7 @@ class MainGUI:
 
     def load_simulation(self):
         ScenarioLoader(self)
-    
+
     def save_scenario(self):
         print('Save scenario not implemented yet ')
 
@@ -123,21 +136,21 @@ class MainGUI:
             command=self.load_simulation,
         )
         btn.grid(row=0, column=3, sticky='nswe')
-        
+
         self.scenario_gui_mode = tkinter.StringVar(top_bar, 'Grid')
         self.scenario_gui_mode.trace('w', self.change_scen_gui_mode)
-        
+
         dropdown_label = tkinter.Label(top_bar, text='Mode Selector')
         dropdown_label.grid(row=1, column=0, sticky='nswe')
-        
+
         dropdown = tkinter.OptionMenu(top_bar, self.scenario_gui_mode, 'Free Range', 'Grid', 'Heatmap')
         dropdown.grid(row=1, column=1, sticky='nswe')
-        
-        
-        
+
+
+
         btn_play = Button(top_bar, text="Play", command=lambda: self.play(btn_play))
         btn_play.grid(row=1, column=2, sticky='nswe')
-        
+
         btn = Button(top_bar, text="Save Scenario", command=self.save_scenario)
         btn.grid(row=1, column=3, sticky='nswe')
 
