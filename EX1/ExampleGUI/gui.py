@@ -48,6 +48,8 @@ class MainGUI:
         self, button
     ):      
         button.config(text="Pause", command=lambda: self.pause(button))
+        print('Play: not implemented yet!')
+        return
         self.is_playing = True
         self.play_thread = t.Thread(target=self.play_loop)
         self.play_thread.start()
@@ -61,6 +63,8 @@ class MainGUI:
         self, button
     ):
         button.config(text="Play", command=lambda: self.play(button))
+        print('Pause: not implemented yet!')
+        return
         self.is_playing = False
         self.play_thread = None
 
