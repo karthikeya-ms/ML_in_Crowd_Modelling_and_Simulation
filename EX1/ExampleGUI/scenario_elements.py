@@ -1,13 +1,10 @@
-import scipy.spatial.distance
-from PIL import Image, ImageTk
+from __future__ import annotations
 from math import sqrt
 from shared_types import Location, Color
 from fast_marching_method import FastMarchingMethod
 from numpy.typing import NDArray
-from tkinter import Canvas
 import numpy as np
 import json
-
 
 
 class Scenario:
@@ -92,9 +89,17 @@ class Pedestrian:
     def position(self) -> Location:
         return self._position
 
+    @position.setter
+    def position(self, position: Location) -> None:
+        self._position = position
+
     @property
     def desired_speed(self) -> float:
         return self._desired_speed
+
+    @desired_speed.setter
+    def desired_speed(self, speed: Location) -> None:
+        self._desired_speed = speed
 
     @property
     def speed_offset(self) -> float:
@@ -103,6 +108,17 @@ class Pedestrian:
     @speed_offset.setter
     def speed_offset(self, speed_offset: float) -> None:
         self._speed_offset = speed_offset
+
+    def __hash__(self) -> int:
+        return hash(self.position)
+
+    def __eq__(self, other: Pedestrian | tuple[int, int]) -> bool:
+        if isinstance(other, Pedestrian):
+            return self.position == other.position
+        elif isinstance(other, tuple):
+            return self.position[0] == other[0] and self.position[1] == other[1]
+        else:
+            return False
 
     def get_neighbors(self, scenario: Scenario) -> list[Location]:
         """
@@ -126,6 +142,10 @@ class Pedestrian:
             if next_pos is None:
                 break
 
+            if next_pos in scenario.pedestrians and next_pos not in scenario.targets:
+                self.speed_offset = 0.0
+                break
+
             distance = sqrt(
                 (self.position[0] - next_pos[0]) ** 2
                 + (self.position[1] - next_pos[1]) ** 2
@@ -133,6 +153,6 @@ class Pedestrian:
             if distance > step_speed:
                 break
             else:
-                self._position = next_pos
+                self.position = next_pos
                 step_speed -= distance
         self.speed_offset = step_speed
