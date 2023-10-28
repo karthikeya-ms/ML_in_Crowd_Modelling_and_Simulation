@@ -168,7 +168,7 @@ class ScenarioGUI:
         self._pedestrian_pos: Optional[set[Location]] = None
 
         #creating a canvas to be able to draw our grid
-        self._canvas: tk.Canvas = tk.Canvas(self._master, width=self._canvas_width, height=self._canvas_height)
+        self._canvas: tk.Canvas = tk.Canvas(self._master, width=self._canvas_width, height=self._canvas_height, highlightthickness=0)
         self._canvas.pack()
 
         #binding mouse click events to the canvas to interact
@@ -272,8 +272,9 @@ class ScenarioGUI:
         if self._cell_side * self._scenario.height > self._max_canvas_height:
             self._cell_side = self._max_canvas_height / self._scenario.height
         
-        self._canvas_width = self._cell_side * self._scenario.width
-        self._canvas_height = self._cell_side * self._scenario.height
+        # The plus one just ensures grid lines can be all drawn
+        self._canvas_width = self._cell_side * self._scenario.width +1
+        self._canvas_height = self._cell_side * self._scenario.height +1
 
     def draw_scenario(self) -> None:
         """
@@ -282,6 +283,7 @@ class ScenarioGUI:
             However, when updating positions of any elements the method ScenarioGUI.update_grid is prefered.
         """
 
+        self._canvas.delete('all')
         self._canvas.create_rectangle(0, 0, self._canvas_width, self._canvas_height, fill=ScenarioGUI.BACKGROUND_COLOR)
 
         if self._heatmap_mode:
@@ -294,11 +296,11 @@ class ScenarioGUI:
     def draw_grid(self) -> None:
         """Draws the grid.
         """
-        for i in range(1, self._grid_width):
+        for i in range(0, self._grid_width+1):
             x = i*self._cell_side
             self._canvas.create_line(x, 0, x, self._canvas_height, fill=ScenarioGUI.SEPARATOR_COLOR)
             
-        for i in range(1, self._grid_height):
+        for i in range(0, self._grid_height+1):
             y = i*self._cell_side
             self._canvas.create_line(0, y, self._canvas_width, y, fill=ScenarioGUI.SEPARATOR_COLOR)
 
