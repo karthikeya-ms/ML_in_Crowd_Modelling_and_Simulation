@@ -146,13 +146,13 @@ class ScenarioGUI:
     
     OBSTACLE_HOLD_SECONDS = 0.5
 
-    def __init__(self, master: tk.Frame, scen: Scenario, max_canvas_dimensions: tuple[int, int] =(600, 600), grid_mode: bool =False, heatmap_mode: bool =False) -> None:
+    def __init__(self, master: tk.Frame, scen: Scenario, max_canvas_dimensions: tuple[int, int] =(600, 600), grid_mode: bool =True, heatmap_mode: bool =False) -> None:
         """Creates an instance of the ScenarioGUI class. Also creates the canvas for the simulation and draws it.
 
         Args:
             master (tkinter.Frame): The tkinter frame object in which the grid will be rendered.
             scen (Scenario): The initial scenario to be rendered in the grid.
-            grid_mode (bool, optional): Initial value of the grid_mode property. Defaults to False.
+            grid_mode (bool, optional): Initial value of the grid_mode property. Defaults to True.
             heatmap_mode (bool, optional): Initial value of the heatmap_mode property. Defaults to False.
         """
         self._master: tk.Frame = master

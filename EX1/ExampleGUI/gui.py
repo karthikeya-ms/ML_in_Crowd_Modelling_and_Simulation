@@ -120,7 +120,7 @@ class MainGUI:
         file_menu.add_command(label="Close", command=self.exit_gui)
 
         grid_frame = tkinter.Frame(win, width=500, height=500)
-        self.scenario_gui = ScenarioGUI(grid_frame, self.scenario, grid_mode=True, heatmap_mode=False)
+        self.scenario_gui = ScenarioGUI(grid_frame, self.scenario)
 
         top_bar = tkinter.Frame(win, height=50, width=1000)
 
