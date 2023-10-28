@@ -16,20 +16,6 @@ class Scenario:
     """
 
     GRID_SIZE: Location = (500, 500)
-    ID2NAME: dict[int, str] = {0: "EMPTY", 1: "TARGET", 2: "OBSTACLE", 3: "PEDESTRIAN"}
-    NAME2ID: dict[str, int] = {
-        ID2NAME[0]: 0,
-        ID2NAME[1]: 1,
-        ID2NAME[2]: 2,
-        ID2NAME[3]: 3,
-    }
-
-    NAME2COLOR: dict[str, Color] = {
-        "EMPTY": (255, 255, 255),
-        "PEDESTRIAN": (255, 0, 0),
-        "TARGET": (0, 0, 255),
-        "OBSTACLE": (255, 0, 255),
-    }
 
     def get_neighbours(self, x_coord: int, y_coord: int) -> list[Location]:
         """
@@ -58,16 +44,13 @@ class Scenario:
         if height < 1 or height > 1024:
             raise ValueError(f"Height {height} must be in [1, 1024].")
 
-        self.grid_image = None
         self.pedestrians: list[Pedestrian] = []
         self.targets: set[Location] = set()
         self.obstacles: set[Location] = set()
         self.width = width
         self.height = height
-        self.grid: NDArray[np.int8] = np.zeros((width, height)).astype(np.int8)
 
         for t in file_json["targets"]:
-            self.grid[t["x"], t["y"]] = Scenario.NAME2ID["TARGET"]
             self.targets.add((t["x"], t["y"]))
 
         for p in file_json["pedestrians"]:
