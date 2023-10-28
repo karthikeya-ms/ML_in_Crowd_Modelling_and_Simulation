@@ -146,7 +146,7 @@ class ScenarioGUI:
     
     OBSTACLE_HOLD_SECONDS = 0.5
 
-    def __init__(self, master: tk.Frame, scen: Scenario, grid_mode: bool =False, heatmap_mode: bool =False) -> None:
+    def __init__(self, master: tk.Frame, scen: Scenario, max_canvas_dimensions: tuple[int, int] =(600, 600), grid_mode: bool =False, heatmap_mode: bool =False) -> None:
         """Creates an instance of the ScenarioGUI class. Also creates the canvas for the simulation and draws it.
 
         Args:
@@ -157,15 +157,18 @@ class ScenarioGUI:
         """
         self._master: tk.Frame = master
 
-        self._scenario: Scenario = scen
         self._grid_mode: bool = grid_mode
         self._heatmap_mode: bool = heatmap_mode
-
+        
+        self._scenario: Scenario = scen
+        self._max_canvas_dimensions: tuple[int, int] = max_canvas_dimensions
+        self._set_canvas_dimensions()
+        
         self._left_mouse_button: LeftMouseButton = LeftMouseButton(self, ScenarioGUI.OBSTACLE_HOLD_SECONDS)
         self._pedestrian_pos: Optional[set[Location]] = None
 
         #creating a canvas to be able to draw our grid
-        self._canvas: tk.Canvas = tk.Canvas(self._master, width=self._canvas_side, height=self._canvas_side)
+        self._canvas: tk.Canvas = tk.Canvas(self._master, width=self._canvas_width, height=self._canvas_height)
         self._canvas.pack()
 
         #binding mouse click events to the canvas to interact
@@ -208,34 +211,28 @@ class ScenarioGUI:
             This setter ensures these procedures are executed when the scenario is updated.
         """
         self._scenario = scen
+        self._set_canvas_dimensions()
+        self._canvas.configure(width=self._canvas_width, height=self._canvas_height)
         self.draw_scenario()
 
     @property
-    def _grid_side(self) -> int:
+    def _grid_width(self) -> int:
         """
-            int : The scenario's side length in number of cells.
+            int : The scenario's width length in number of cells.
             
-            The number of cells in a side of the grid. Extracted dynamically from the scenario.
+            The number of cells the grid measures in width. Extracted dynamically from the scenario.
         """
-        return self.scenario.width
-
+        return self._scenario.width
+    
     @property
-    def _cell_side(self) -> float:
+    def _grid_height(self) -> int:
         """
-            float : A cell's side length in screen units.
+            int : The scenario's height length in number of cells.
             
-            This length is computed dynamically from the scenario.
+            The number of cells the grid measures in height. Extracted dynamically from the scenario.
         """
-        return Scenario.GRID_SIZE[0] / self.scenario.width
-
-    @property
-    def _canvas_side(self) -> float:
-        """
-            float : The canvas' side length in screen units.
-            
-            This length is computed dynamically from the scenario.
-        """
-        return Scenario.GRID_SIZE[0]
+        return self._scenario.height
+    
 
     @property
     def _element_radius(self) -> float:
@@ -261,6 +258,23 @@ class ScenarioGUI:
         """
         return max(ScenarioGUI.MIN_OBSTACLE_SIDE, self._cell_side)
 
+    @property
+    def _max_canvas_width(self) -> float:
+        return self._max_canvas_dimensions[0]
+    
+    @property
+    def _max_canvas_height(self) -> float:
+        return self._max_canvas_dimensions[1]
+
+    def _set_canvas_dimensions(self):
+        self._cell_side = self._max_canvas_width / self._scenario.width
+        
+        if self._cell_side * self._scenario.height > self._max_canvas_height:
+            self._cell_side = self._max_canvas_height / self._scenario.height
+        
+        self._canvas_width = self._cell_side * self._scenario.width
+        self._canvas_height = self._cell_side * self._scenario.height
+
     def draw_scenario(self) -> None:
         """
             Draws the grid from an empty canvas. This method should only be invoked when the grid itself changes, 
@@ -268,7 +282,7 @@ class ScenarioGUI:
             However, when updating positions of any elements the method ScenarioGUI.update_grid is prefered.
         """
 
-        self._canvas.create_rectangle(0, 0, self._canvas_side, self._canvas_side, fill=ScenarioGUI.BACKGROUND_COLOR)
+        self._canvas.create_rectangle(0, 0, self._canvas_width, self._canvas_height, fill=ScenarioGUI.BACKGROUND_COLOR)
 
         if self._heatmap_mode:
             self.draw_target_heatmap()
@@ -280,13 +294,13 @@ class ScenarioGUI:
     def draw_grid(self) -> None:
         """Draws the grid.
         """
-        for i in range(1, self._grid_side):
+        for i in range(1, self._grid_width):
             x = i*self._cell_side
-            self._canvas.create_line(x, 0, x, self._canvas_side, fill=ScenarioGUI.SEPARATOR_COLOR)
+            self._canvas.create_line(x, 0, x, self._canvas_height, fill=ScenarioGUI.SEPARATOR_COLOR)
             
-        for i in range(1, self._grid_side):
+        for i in range(1, self._grid_height):
             y = i*self._cell_side
-            self._canvas.create_line(0, y, self._canvas_side, y, fill=ScenarioGUI.SEPARATOR_COLOR)
+            self._canvas.create_line(0, y, self._canvas_width, y, fill=ScenarioGUI.SEPARATOR_COLOR)
 
     def draw_target_heatmap(self) -> None:
         """
@@ -302,8 +316,8 @@ class ScenarioGUI:
             return h
         
         self._canvas.delete(ScenarioGUI.HEATMAP_TAG)
-        for x in range(self._grid_side):
-            for y in range(self._grid_side):
+        for x in range(self._grid_width):
+            for y in range(self._grid_height):
                 target_distance = self.scenario.fast_marching.grid[y][x].T
                 if target_distance == float("inf"):
                     target_distance = 0

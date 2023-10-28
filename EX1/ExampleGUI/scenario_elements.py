@@ -15,8 +15,6 @@ class Scenario:
     A scenario for a cellular automaton.
     """
 
-    GRID_SIZE: Location = (500, 500)
-
     def get_neighbours(self, x_coord: int, y_coord: int) -> list[Location]:
         """
         Compute all neighbors in a 9 cell neighborhood of the current position.
