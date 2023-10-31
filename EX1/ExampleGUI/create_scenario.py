@@ -1,3 +1,8 @@
+"""
+This module is concerned witht the classes and functions needed
+in order to display the scenario creation menu.
+"""
+
 import tkinter as tk
 from tkinter import ttk
 from enum import Enum
@@ -7,17 +12,45 @@ ENTRY_TYPE = dict[str, int | float]
 
 
 class FrameType(str, Enum):
+    """
+    The type of section inside the create scenario window
+    """
+
     GRID_SIZE = "Grid Size"
+    """
+    frame dedicated to grid size input
+    """
     PEDESTRIANS = "Pedestrians"
+    """
+    frame dedicated pedestrian information input
+    """
     TARGETS = "Targets"
+    """
+    frame dedicated target location input
+    """
     OBSTACLES = "Obstacles"
+    """
+    frame dedicated to obstacle location input
+    """
     SCENARIO_INFO = "Scenario Info"
+    """
+    frame dedicated to scenario metadata. Currently only has 
+    scenario name.
+    """
 
 
 SINGLE_ROW_TYPES = (FrameType.GRID_SIZE, FrameType.SCENARIO_INFO)
 
 
 class InputRow:
+    """
+    A class to construct a number of input fields in a row and add them to a tkinter frame
+
+    Attributes:
+    -----------
+    entries: a list of the tk.Entry instances in this row. Used to retrieve user input.
+    """
+
     def __init__(
         self,
         outer_frame: tk.Frame,
@@ -25,6 +58,16 @@ class InputRow:
         input_field_names: list[str],
         field_width: int,
     ):
+        """
+        Creates an instance of InputRow. constructs the input fields and adds them to the given frame
+
+        Args:
+            outer_frame (tkinter.Frame): the frame that will contain the input row.
+            row (int): the row index of this InputRow inside the frame.
+            input_field_names (list[str]): a list of field names. Will be used as labels.
+            field_width (int): the width of each input box.
+        """
+
         self.entries: list[tk.Entry] = []
         for index, field_name in enumerate(input_field_names, 0):
             frame = tk.Frame(outer_frame, borderwidth=0, highlightthickness=0)
@@ -40,7 +83,24 @@ class InputRow:
 
 
 class InputFrame:
+    """
+    A class to construct a tkinter frame contaning a section of the scenario creator.
+
+    Attributes:
+    -----------
+    frame: the frame containing all the elements in the section.
+    input_rows: a list of rows inside the frames. Used to get user input.
+    """
+
     def __init__(self, outer_frame: tk.Frame, frame_type: FrameType):
+        """
+        Creates an instance of InputFrame.
+
+        Args:
+            outer_frame (tkinter.Frame): the frame that will contain the new section frame.
+            frame_type (FrameType): the type of section/frame inside the scenario creator.
+        """
+
         self.frame = tk.Frame(outer_frame, borderwidth=0, highlightthickness=0)
         self.frame.pack(fill="x")
         self.frame_type = frame_type
@@ -62,6 +122,11 @@ class InputFrame:
             self.add_input_row()
 
     def add_input_row(self):
+        """
+        Generates a new row inside the frame/section, uses the frame_type property
+        to figure out the input fields needed.
+        """
+
         input_field_names: list[str] = []
         match self.frame_type:
             case FrameType.GRID_SIZE:
@@ -86,6 +151,11 @@ class InputFrame:
 
 
 def handle_width_resize(event):
+    """
+    Resizes certain elements inside the window to keep the scrollbar
+    functioning.
+    """
+
     canvas = event.widget
     canvas_frame = canvas.nametowidget(canvas.itemcget("content_frame", "window"))
     min_width = canvas_frame.winfo_reqwidth()
@@ -94,7 +164,14 @@ def handle_width_resize(event):
 
 
 class ScenarioCreator:
+    """
+    A scenario creator window
+    """
+
     def __init__(self):
+        """
+        Creates an instance of ScenarioCreator.
+        """
         self.win = tk.Tk()
         self.win.geometry("500x500")
         self.win.title("Scenario Creator")
@@ -158,7 +235,7 @@ class ScenarioCreator:
             width=8,
             command=self.save,
         ).pack(fill="x", padx=100)
-        
+
         tk.Button(
             self.content_frame,
             text=f"Save Scenario and Close",
@@ -167,6 +244,11 @@ class ScenarioCreator:
         ).pack(fill="x", padx=100)
 
     def save(self):
+        """
+        Parses the stored input values into a JSON format, then
+        outputs the scenario file.
+        """
+
         size_dict: ENTRY_TYPE = {
             "width": int(self.grid_size_frame.input_rows[0].entries[0].get()),
             "height": int(self.grid_size_frame.input_rows[0].entries[1].get()),
@@ -212,5 +294,9 @@ class ScenarioCreator:
             out.write(scenario_json)
 
     def save_and_close(self):
+        """
+        Calls save() then closes the window
+        """
+
         self.save()
         self.win.destroy()

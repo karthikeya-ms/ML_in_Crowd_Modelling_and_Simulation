@@ -1,3 +1,8 @@
+"""
+This module contains our implementation of the fast marching method and any
+helper classes or constants used.
+"""
+
 from enum import Enum
 from dataclasses import dataclass
 from queue import PriorityQueue
@@ -11,19 +16,57 @@ INF = float("inf")
 
 
 class _CellStatus(str, Enum):
+    """
+    The cell statuses used in fast marching algorithm.
+    """
+
     UNKNONW = "unknown"
+    """
+    The time to reach this cell is unknown.
+    """
     NARROW_BAND = "narrow band"
+    """
+    This cell is a neighbor to another cell we know the time of.
+    """
     FROZEN = "frozen"
+    """
+    The time to reach this cell is known.
+    """
 
 
 @dataclass(kw_only=True, order=True)
 class FMMCell:
+    """
+    A class containing the information needed for fast marching per each cell in the grid.
+
+    Attributes:
+    -----------
+    T: the time taken to reach this cell from the nearest target. Time here is just an integer, there is no particular unit.
+    location: a tuple of (x,y) location of the cell. x is horizontal, y is vertical.
+    status: The cell status of the fast marching algorithm.
+    """
+
     T: float
     location: Location
     status: _CellStatus
 
 
 class FastMarchingMethod:
+    """
+    An implementation of the fast marching method (FMM) for the shortest distance
+
+    Attributes:
+    -----------
+    height: height of the grid.
+    wifth: width of the grid.
+    grid: a 2d list of size height x width. Each cell contains an instances of FMMCell.
+
+    Private Attributes (use inside class):
+    --------------------------------------
+    _min_q : PriorityQueue[FMMCell]
+        A priority queue used inside the fast marching algorithm to get the cell with the least T (time).
+    """
+
     def __init__(
         self,
         width: int,
@@ -31,6 +74,15 @@ class FastMarchingMethod:
         targets: set[tuple[int, int]],
         obstacles: set[tuple[int, int]],
     ):
+        """
+        Creates an instance of the FastMarchingMethod, and runs the algorithm on the given grid configuration.
+
+        Args:
+            width (int): width of the grid.
+            height (int): height of the grid.
+            targets (set[tuple[int, int]]): a set containing the locations of the targets in the grid as (x,y) tuples.
+            obstacles (set[tuple[int, int]]): a set containing the locations of the obstacles in the grid as (x,y) tuples.
+        """
         self.grid: list[list[FMMCell]] = [
             [
                 FMMCell(T=INF, location=(i, j), status=_CellStatus.UNKNONW)
@@ -57,6 +109,10 @@ class FastMarchingMethod:
         self._run()
 
     def _run(self) -> None:
+        """
+        Runs the fast marching algorithm on the given grid. Calculates the minimum time needed
+        to reach each cell from the nearest target. Updates the grid property.
+        """
         while not self._min_q.empty():
             A = self._min_q.get()
             A.status = _CellStatus.FROZEN
@@ -69,6 +125,15 @@ class FastMarchingMethod:
                     node.T = self._solve_eikonal(node)
 
     def _get_adjacent_nodes(self, location: Location) -> dict[str, FMMCell]:
+        """
+        dict[str, FMMCell] : a dictionary containing the FMMCell of the neighboring 8 cells,
+        ["nw", "n", "ne", "w", "e", "sw", "s", "se"]
+
+        Gets the 8 cells adjacent to the given location on the grid.
+
+        Args:
+            location (tuple[int,int]): the location of the cell as tuple (i, j) where i is the row and j is the column.
+        """
         i = location[0]
         j = location[1]
         directions = ["nw", "n", "ne", "w", "e", "sw", "s", "se"]
@@ -87,6 +152,16 @@ class FastMarchingMethod:
         }
 
     def _solve_eikonal(self, node: FMMCell) -> float:
+        """
+        float : the shortest time taken to reach the given cell from the nearest target
+
+        The curve representing the time taken to reach closest target can be thought of
+        as a convex function where the global minimum is at the target. The values of
+        that functions are evaluated here using the speed F and the adjacent cell.
+
+        Args:
+            node (FMMCell): the node we want to calculate the time/cost for.
+        """
         F = 1
         adjacent = self._get_adjacent_nodes(node.location)
         known_adjacent = {
@@ -130,13 +205,27 @@ class FastMarchingMethod:
         return max(sol1, sol2)
 
     def plot_t_grid(self) -> None:
+        """
+        Plots the time/cost grid as a heatmap. useful for visualizing what the algorithm is doing.
+        """
         t_grid = np.array([[cell.T for cell in row] for row in self.grid])
         t_grid[t_grid == INF] = np.nan
         plt.figure(figsize=(self.width, self.height))
-        hm = sns.heatmap(data=t_grid, annot=True)
+        sns.heatmap(data=t_grid, annot=True)
         plt.show()
 
     def get_next_move(self, location: Location) -> tuple[int, int] | None:
+        """
+        tuple[int, int] | None : the location of the next cell according to the fast marching method.
+        returns None if there are no valid moves to make.
+
+        Uses the calculated time/cost grid in order to get the location of the best move from
+        the given location.
+
+        Args:
+            location (tuple[int,int]): the location of the cell as tuple (x, y) where y is the row and x is the column.
+        """
+
         x = location[0]
         y = location[1]
         assert (
