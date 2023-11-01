@@ -3,10 +3,10 @@ This module contains our implementation of the fast marching method and any
 helper classes or constants used.
 """
 
+import math
 from enum import Enum
 from dataclasses import dataclass
 from queue import PriorityQueue
-import math
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt

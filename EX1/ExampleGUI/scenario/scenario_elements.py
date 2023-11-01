@@ -2,9 +2,10 @@ from __future__ import annotations
 import json
 import numpy as np
 from math import sqrt
-from fast_marching_method import FastMarchingMethod
 from numpy.typing import NDArray
 from shared_types import Location, Color
+
+from scenario.fast_marching_method import FastMarchingMethod
 
 
 class Scenario:

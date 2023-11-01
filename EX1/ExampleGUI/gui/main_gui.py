@@ -3,12 +3,12 @@ import tkinter
 import time
 import threading as t
 from tkinter import Button, Canvas, Menu
-from scenario_elements import Scenario, Pedestrian
-from create_scenario import ScenarioCreator
-from scenario_gui import ScenarioGUI
-from scenario_loader import ScenarioLoader
-from scenario_saver import ScenarioSaver
-from gui_callback import GuiCallback
+from scenario.scenario_elements import Scenario, Pedestrian
+from gui.create_scenario import ScenarioCreator
+from gui.scenario_gui import ScenarioGUI
+from gui.scenario_loader import ScenarioLoader
+from gui.scenario_saver import ScenarioSaver
+from gui.gui_callback import GuiCallback
 
 class MainGUI:
     """

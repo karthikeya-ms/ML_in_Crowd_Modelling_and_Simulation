@@ -5,8 +5,8 @@ import sys
 import tkinter as tk
 import threading as th
 
-from scenario_elements import Scenario, Pedestrian
-from gui_callback import GuiCallback
+from scenario.scenario_elements import Scenario, Pedestrian
+from gui.gui_callback import GuiCallback
 
 class LeftMouseButton:
     """

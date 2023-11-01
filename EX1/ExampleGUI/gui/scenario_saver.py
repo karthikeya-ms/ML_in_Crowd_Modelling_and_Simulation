@@ -5,9 +5,10 @@ if TYPE_CHECKING:
 
 import os.path
 import tkinter
-from tkinter import messagebox
-from scenario_elements import Scenario
 import json
+from tkinter import messagebox
+
+from scenario.scenario_elements import Scenario
 
 
 # Note: For cleaner code, normally we'd use json.JSONEncoder. But this is a simple enough case that we don't need to.

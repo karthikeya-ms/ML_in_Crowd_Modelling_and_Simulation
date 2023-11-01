@@ -2,8 +2,8 @@ import os
 import tkinter
 
 
-from scenario_elements import Scenario
-from create_scenario import handle_width_resize
+from scenario.scenario_elements import Scenario
+from gui.create_scenario import handle_width_resize
 
 class ScenarioLoader:
     
