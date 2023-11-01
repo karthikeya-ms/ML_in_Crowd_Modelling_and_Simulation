@@ -8,7 +8,7 @@ from create_scenario import ScenarioCreator
 from scenario_gui import ScenarioGUI
 from scenario_loader import ScenarioLoader
 from scenario_saver import ScenarioSaver
-
+from gui_callback import GuiCallback
 
 class MainGUI:
     """
@@ -18,6 +18,7 @@ class MainGUI:
 
     def __init__(self):
         self._scenario = Scenario(file_path='scenarios/form_scenario_1.json')
+        self._scenario_lock = t.Lock()
         self.scenario_gui = None
         self.scenario_gui_mode = None
 
@@ -47,24 +48,22 @@ class MainGUI:
     def play(
         self, button
     ):      
-        button.config(text="Pause", command=lambda: self.pause(button))
-        print('Play: not implemented yet!')
-        return
+        button.config(text="Pause", command=GuiCallback((), lambda: self.pause(button)))
         self.is_playing = True
         self.play_thread = t.Thread(target=self.play_loop)
         self.play_thread.start()
 
     def play_loop(self):
         while self.is_playing:
-            time.sleep(0.5)
+            time.sleep(0.7)
+            self._scenario_lock.acquire()
             self.step_scenario()
+            self._scenario_lock.release()
 
     def pause(
         self, button
     ):
-        button.config(text="Play", command=lambda: self.play(button))
-        print('Pause: not implemented yet!')
-        return
+        button.config(text="Play", command=GuiCallback((), lambda: self.play(button)))
         self.is_playing = False
         self.play_thread = None
 
@@ -120,30 +119,30 @@ class MainGUI:
         win.config(menu=menu)
         file_menu = Menu(menu)
         menu.add_cascade(label="Simulation", menu=file_menu)
-        file_menu.add_command(label="New", command=self.create_scenario)
-        file_menu.add_command(label="Restart", command=self.restart_scenario)
-        file_menu.add_command(label="Close", command=self.exit_gui)
+        file_menu.add_command(label="New", command=GuiCallback((self._scenario_lock,), self.create_scenario))
+        file_menu.add_command(label="Restart", command=GuiCallback((self._scenario_lock,), self.restart_scenario))
+        file_menu.add_command(label="Close", command=GuiCallback((self._scenario_lock,), self.exit_gui))
 
         grid_frame = tkinter.Frame(win, width=500, height=500)
-        self.scenario_gui = ScenarioGUI(grid_frame, self.scenario)
+        self.scenario_gui = ScenarioGUI(grid_frame, self.scenario, self._scenario_lock)
 
         top_bar = tkinter.Frame(win, height=50, width=1000)
 
-        btn = Button(top_bar, text="Step Simulation", command=self.step_scenario)
+        btn = Button(top_bar, text="Step Simulation", command=GuiCallback((self._scenario_lock,), self.step_scenario))
         btn.grid(row=0, column=0, sticky='nswe')
-        btn = Button(top_bar, text="Restart Simulation", command=self.restart_scenario)
+        btn = Button(top_bar, text="Restart Simulation", command=GuiCallback((self._scenario_lock,), self.restart_scenario))
         btn.grid(row=0, column=1, sticky='nswe')
-        btn = Button(top_bar, text="Create Simulation", command=self.create_scenario)
+        btn = Button(top_bar, text="Create Simulation", command=GuiCallback((self._scenario_lock,), self.create_scenario))
         btn.grid(row=0, column=2, sticky='nswe')
         btn = Button(
             top_bar,
             text="Load Simulation",
-            command=self.load_simulation,
+            command=GuiCallback((self._scenario_lock,), self.load_simulation),
         )
         btn.grid(row=0, column=3, sticky='nswe')
 
         self.scenario_gui_mode = tkinter.StringVar(top_bar, 'Grid')
-        self.scenario_gui_mode.trace('w', self.change_scen_gui_mode)
+        self.scenario_gui_mode.trace('w', GuiCallback((self._scenario_lock,), self.change_scen_gui_mode))
 
         dropdown_label = tkinter.Label(top_bar, text='Mode Selector')
         dropdown_label.grid(row=1, column=0, sticky='nswe')
@@ -153,10 +152,10 @@ class MainGUI:
 
 
 
-        btn_play = Button(top_bar, text="Play", command=lambda: self.play(btn_play))
+        btn_play = Button(top_bar, text="Play", command=GuiCallback((), lambda: self.play(btn_play)))
         btn_play.grid(row=1, column=2, sticky='nswe')
 
-        btn = Button(top_bar, text="Save Scenario", command=self.save_scenario)
+        btn = Button(top_bar, text="Save Scenario", command=GuiCallback((self._scenario_lock,), self.save_scenario))
         btn.grid(row=1, column=3, sticky='nswe')
 
         top_bar.pack(side=tkinter.TOP)

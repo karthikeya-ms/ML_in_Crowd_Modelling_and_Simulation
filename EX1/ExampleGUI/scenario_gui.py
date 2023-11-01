@@ -3,11 +3,10 @@ from __future__ import annotations
 import time
 import sys
 import tkinter as tk
-from typing import Optional
+import threading as th
 
 from scenario_elements import Scenario, Pedestrian
-from shared_types import Location
-
+from gui_callback import GuiCallback
 
 class LeftMouseButton:
     """
@@ -149,6 +148,7 @@ class ScenarioGUI:
         self,
         master: tk.Frame,
         scen: Scenario,
+        scenario_lock: th.Lock,
         max_canvas_dimensions: tuple[int, int] =(600, 600),
         grid_mode: bool = True,
         heatmap_mode: bool = False,
@@ -167,6 +167,7 @@ class ScenarioGUI:
         self._heatmap_mode: bool = heatmap_mode
         
         self._scenario: Scenario = scen
+        self._scenario_lock = scenario_lock
         self._max_canvas_dimensions: tuple[int, int] = max_canvas_dimensions
         self._set_canvas_dimensions()
         
@@ -181,13 +182,13 @@ class ScenarioGUI:
         self._canvas.pack()
 
         # binding mouse click events to the canvas to interact
-        self._canvas.bind("<Button-1>", self._on_left_press)
-        self._canvas.bind("<ButtonRelease-1>", self._on_left_release)
-        self._canvas.bind("<B1-Motion>", self._on_left_drag)
+        self._canvas.bind("<Button-1>", GuiCallback((self._scenario_lock, ), self._on_left_press))
+        self._canvas.bind("<ButtonRelease-1>", GuiCallback((self._scenario_lock, ), self._on_left_release))
+        self._canvas.bind("<B1-Motion>", GuiCallback((self._scenario_lock, ), self._on_left_drag))
         if sys.platform == "darwin":
-            self._canvas.bind("<Button-2>", self._on_right_click)
+            self._canvas.bind("<Button-2>", GuiCallback((self._scenario_lock, ), self._on_right_click))
         else:
-            self._canvas.bind("<Button-3>", self._on_right_click)
+            self._canvas.bind("<Button-3>", GuiCallback((self._scenario_lock, ), self._on_right_click))
 
         # drawing the initial scenario
         self.draw_scenario()
@@ -269,13 +270,33 @@ class ScenarioGUI:
 
     @property
     def _max_canvas_width(self) -> float:
+        """
+        float : The max width of the canvas in screen units.
+
+        The maximum width of the canvas that will render any scenario. 
+        Used to calculate the actual width the canvas that will be used for any rendered scenario.
+        """
         return self._max_canvas_dimensions[0]
     
     @property
     def _max_canvas_height(self) -> float:
+        """
+        float : The max height of the canvas in screen units.
+
+        The maximum height of the canvas that will render any scenario. 
+        Used to calculate the actual height the canvas that will be used for any rendered scenario.
+        """
         return self._max_canvas_dimensions[1]
 
     def _set_canvas_dimensions(self):
+        """
+        This method uses the width and height bounds of the canvas 
+        together with the width and height of the scenario (in number of cells)
+        to be rendered to calculate the:
+            Side of a cell
+            Width and height of the canvas
+        All in screen units.
+        """
         self._cell_side = self._max_canvas_width / self._scenario.width
         
         if self._cell_side * self._scenario.height > self._max_canvas_height:
@@ -510,16 +531,23 @@ class ScenarioGUI:
             self.scenario.obstacles.add(obstacle)
             self.update_scenario()
 
-    def activate_grid_mode(self):
+    def activate_grid_mode(self) -> None:
+        """The scenario will now be rendered in a normal background with a grid."""
         self._grid_mode = True
         self._heatmap_mode = False
         self.draw_scenario()
 
-    def activate_heatmap_mode(self):
+    def activate_heatmap_mode(self) -> None:
+        """
+        The scenario will now be rendered on a heatmap background in which 
+        the temperature increases with the inverse of the distance to the target.
+        This heatmap is drawn per cell on a grid.
+        """
         self._heatmap_mode = True
         self.draw_scenario()
 
-    def activate_free_range_mode(self):
+    def activate_free_range_mode(self) -> None:
+        """The scenario will now be rendered in a normal backgorund with no gird."""
         self._grid_mode = False
         self._heatmap_mode = False
         self.draw_scenario()

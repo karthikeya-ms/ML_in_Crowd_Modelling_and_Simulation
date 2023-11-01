@@ -1,10 +1,10 @@
 from __future__ import annotations
+import json
+import numpy as np
 from math import sqrt
-from shared_types import Location, Color
 from fast_marching_method import FastMarchingMethod
 from numpy.typing import NDArray
-import numpy as np
-import json
+from shared_types import Location, Color
 
 
 class Scenario:
