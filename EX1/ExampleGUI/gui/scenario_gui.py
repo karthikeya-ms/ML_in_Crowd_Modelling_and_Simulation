@@ -5,7 +5,7 @@ import sys
 import tkinter as tk
 import threading as th
 
-from scenario.scenario_elements import Scenario, Pedestrian
+from scenario.scenario_elements import Scenario, Pedestrian, MeasuringPoint
 from gui.gui_callback import GuiCallback
 
 class LeftMouseButton:
@@ -135,6 +135,7 @@ class ScenarioGUI:
     PEDESTRIAN_COLOR = "#FF0000"
     TARGET_COLOR = "#0000FF"
     OBSTACLE_COLOR = "#FF00FE"
+    MEASURING_POINT_COLOR = "#00FF00"
 
     MIN_ELEMENT_RADIUS = 3
     MIN_OBSTACLE_SIDE = 3
@@ -326,6 +327,9 @@ class ScenarioGUI:
             self.draw_target_heatmap()
         elif self._grid_mode:
             self.draw_grid()
+            
+        for measuring_point in self.scenario.measure_points:
+            self._draw_measuring_point(measuring_point)
 
         self.update_scenario()
 
@@ -392,6 +396,20 @@ class ScenarioGUI:
 
         for x, y in self.scenario.obstacles:
             self._draw_obstacle(x, y)
+
+    def _draw_measuring_point(self, point: MeasuringPoint) -> None:
+        """Uses the measuing point information to draw it on the canvas.
+
+        Args:
+            point (MeasutingPoint): The measuring point to draw.
+        """
+        self._canvas.create_rectangle(
+            point.x * self._cell_side,
+            point.y * self._cell_side,
+            point.x * self._cell_side + point.width*self._obstacle_side,
+            point.y * self._cell_side + point.height*self._obstacle_side,
+            fill=ScenarioGUI.MEASURING_POINT_COLOR
+        )
 
     def _draw_pedestrian(self, x: int, y: int) -> None:
         """Uses the position of the pedestrian in the grid to draw it on the canvas.
