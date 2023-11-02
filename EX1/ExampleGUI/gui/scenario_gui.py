@@ -443,6 +443,12 @@ class ScenarioGUI:
             tag=ScenarioGUI.ELEMENT_TAG,
         )
 
+    def _clip_x(self, x: int) -> int:
+        return max(0, min(x, self.scenario.width-1))
+
+    def _clip_y(self, y: int) -> int:
+        return max(0, min(y, self.scenario.height-1))
+
     def _on_right_click(self, event: tk.Event) -> None:
         """
             Handler for a right click event. Will calculate the cell clicked
@@ -452,7 +458,10 @@ class ScenarioGUI:
             event (tkinter.Event): The tkinter event object.
         """
         # calculate which square has been clicked on
-        pos = (int(event.x // self._cell_side), int(event.y // self._cell_side))
+        pos = (
+            self._clip_x(int(event.x // self._cell_side)), 
+            self._clip_y(int(event.y // self._cell_side))
+        )
         if not (
             pos in self.scenario.pedestrians
             or pos in self.scenario.targets
@@ -499,7 +508,10 @@ class ScenarioGUI:
             event (tkinter.Event): The tkinter event object.
         """
 
-        pos = (int(event.x // self._cell_side), int(event.y // self._cell_side))
+        pos = (
+            self._clip_x(int(event.x // self._cell_side)), 
+            self._clip_y(int(event.y // self._cell_side))
+        )
         if self._left_mouse_button.release_was_click() and not (
             pos in self.scenario.pedestrians
             or pos in self.scenario.targets
@@ -524,7 +536,10 @@ class ScenarioGUI:
         Args:
             event (tkinter.Event): The tkinter event object.
         """
-        obstacle = (int(event.x // self._cell_side), int(event.y // self._cell_side))
+        obstacle = (
+            self._clip_x(int(event.x // self._cell_side)), 
+            self._clip_y(int(event.y // self._cell_side))
+        )
         if not (
             obstacle in self.scenario.targets or obstacle in self.scenario.pedestrians
         ):
