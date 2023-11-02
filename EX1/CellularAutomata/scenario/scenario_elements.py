@@ -91,7 +91,7 @@ class Scenario:
         
         for measuring_point in self.measure_points:
             measuring_point.calculate_information(self)
-            measuring_point.get_average_over_period(10, 70)
+            measuring_point.get_average_over_period(10, 105)
 
 
 @dataclass(kw_only=True)
