@@ -73,6 +73,7 @@ class FastMarchingMethod:
         height: int,
         targets: set[tuple[int, int]],
         obstacles: set[tuple[int, int]],
+        measure_points: set[tuple[int, int]],
     ):
         """
         Creates an instance of the FastMarchingMethod, and runs the algorithm on the given grid configuration.
@@ -82,6 +83,8 @@ class FastMarchingMethod:
             height (int): height of the grid.
             targets (set[tuple[int, int]]): a set containing the locations of the targets in the grid as (x,y) tuples.
             obstacles (set[tuple[int, int]]): a set containing the locations of the obstacles in the grid as (x,y) tuples.
+            measure_points (set[tuple[int, int]]): a set containing the locations of the measure_points in the grid as (x,y) tuples.
+
         """
         self.grid: list[list[FMMCell]] = [
             [
