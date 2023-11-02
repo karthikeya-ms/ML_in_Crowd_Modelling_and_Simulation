@@ -77,7 +77,7 @@ class MainGUI:
         elif self.scenario_gui_mode.get() == 'Heatmap':
             self.scenario_gui.activate_heatmap_mode()
 
-    def load_simulation(self):
+    def load_scenario(self):
         ScenarioLoader(self)
 
     def save_scenario(self):
@@ -137,7 +137,7 @@ class MainGUI:
         btn = Button(
             top_bar,
             text="Load Simulation",
-            command=GuiCallback((self._scenario_lock,), self.load_simulation),
+            command=GuiCallback((self._scenario_lock,), self.load_scenario),
         )
         btn.grid(row=0, column=3, sticky='nswe')
 
@@ -155,7 +155,7 @@ class MainGUI:
         btn_play = Button(top_bar, text="Play", command=GuiCallback((), lambda: self.play(btn_play)))
         btn_play.grid(row=1, column=2, sticky='nswe')
 
-        btn = Button(top_bar, text="Save Scenario", command=GuiCallback((self._scenario_lock,), self.save_scenario))
+        btn = Button(top_bar, text="Save Simulation", command=GuiCallback((self._scenario_lock,), self.save_scenario))
         btn.grid(row=1, column=3, sticky='nswe')
 
         top_bar.pack(side=tkinter.TOP)

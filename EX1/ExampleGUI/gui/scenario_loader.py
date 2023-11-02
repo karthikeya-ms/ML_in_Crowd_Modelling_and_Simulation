@@ -13,7 +13,7 @@ class ScenarioLoader:
 
         scenario_selector = tkinter.Tk()
         scenario_selector.geometry("500x500")
-        scenario_selector.title("Simulation Selector")
+        scenario_selector.title("Simulation Loader")
 
         self.window = scenario_selector
 
@@ -41,7 +41,7 @@ class ScenarioLoader:
         )
         canvas.bind("<Configure>", handle_width_resize)
 
-        label = tkinter.Label(content_frame, text="Available scenarios:", font="Helvetica 17 bold")
+        label = tkinter.Label(content_frame, text="Available Simulations:", font="Helvetica 17 bold")
         label.pack()
 
         i = 0

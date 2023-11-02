@@ -174,7 +174,7 @@ class ScenarioCreator:
         """
         self.win = tk.Tk()
         self.win.geometry("500x500")
-        self.win.title("Scenario Creator")
+        self.win.title("Simulation Creator")
 
         main_frame = tk.Frame(self.win)
         main_frame.pack(fill="both", expand=True)
