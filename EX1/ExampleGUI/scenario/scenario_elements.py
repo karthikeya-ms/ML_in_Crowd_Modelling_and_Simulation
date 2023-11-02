@@ -56,8 +56,9 @@ class Scenario:
         for o in file_json["obstacles"]:
             self.obstacles.add((o["x"], o["y"]))
 
-        for m in file_json["measure_points"]:
-            self.measure_points.add((m["x"], m["y"]))
+        if "measure_points" in file_json:
+            for m in file_json["measure_points"]:
+                self.measure_points.add((m["x"], m["y"]))
 
         self.fast_marching = FastMarchingMethod(
             self.width, self.height, targets=self.targets, obstacles=self.obstacles, measure_points=self.measure_points
