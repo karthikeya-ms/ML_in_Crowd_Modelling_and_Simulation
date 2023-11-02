@@ -43,6 +43,7 @@ class Scenario:
         self.pedestrians: list[Pedestrian] = []
         self.targets: set[Location] = set()
         self.obstacles: set[Location] = set()
+        self.measure_points: set[Location] = set()
         self.width = width
         self.height = height
 
@@ -55,15 +56,18 @@ class Scenario:
         for o in file_json["obstacles"]:
             self.obstacles.add((o["x"], o["y"]))
 
+        for m in file_json["measure_points"]:
+            self.measure_points.add((m["x"], m["y"]))
+
         self.fast_marching = FastMarchingMethod(
-            self.width, self.height, targets=self.targets, obstacles=self.obstacles
+            self.width, self.height, targets=self.targets, obstacles=self.obstacles, measure_points=self.measure_points
         )
 
         self.recompute_target_distances()
 
     def recompute_target_distances(self) -> None:
         self.fast_marching = FastMarchingMethod(
-            self.width, self.height, targets=self.targets, obstacles=self.obstacles
+            self.width, self.height, targets=self.targets, obstacles=self.obstacles, measure_points=self.measure_points
         )
 
     def update_step(self) -> None:
