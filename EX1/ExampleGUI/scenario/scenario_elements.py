@@ -58,7 +58,15 @@ class Scenario:
 
         if "measure_points" in file_json:
             for m in file_json["measure_points"]:
-                self.measure_points.add((m["x"], m["y"]))
+                
+                # ignore invalid measuring points
+                if m["x"] + m["width"] > self.width \
+                or m["y"] + m["height"] > self.height \
+                or m["x"] + m["width"] < 0 \
+                or m["y"] + m["height"] < 0:
+                    continue
+                
+                self.measure_points.add(MeasuringPoint(m["x"], m["y"], m["width"], m["height"]))
 
         self.fast_marching = FastMarchingMethod(
             self.width, self.height, targets=self.targets, obstacles=self.obstacles, measure_points=self.measure_points
@@ -80,6 +88,14 @@ class Scenario:
         for pedestrian in self.pedestrians:
             pedestrian.update_step(self)
 
+
+class MeasuringPoint:
+    
+    def __init__(self, x: int, y: int, width: int, height: int) -> None:
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
 class Pedestrian:
     """
