@@ -1,3 +1,6 @@
+"""
+This module contains all the classes needed to display and manage the ScenarioGui UI component.
+"""
 from __future__ import annotations
 
 import time
