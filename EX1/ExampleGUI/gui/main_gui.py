@@ -17,7 +17,9 @@ class MainGUI:
     """
 
     def __init__(self):
-        self._scenario = Scenario(file_path='scenarios/form_scenario_1.json')
+        self.scenario_path = 'scenarios/form_scenario_1.json'
+        self._scenario = Scenario(file_path=self.scenario_path)
+        
         self._scenario_lock = t.Lock()
         self.scenario_gui = None
         self.scenario_gui_mode = None
@@ -43,7 +45,7 @@ class MainGUI:
     def restart_scenario(
         self,
     ) -> None:
-        self.scenario = Scenario("scenarios/default.json")
+        self.scenario = Scenario(self.scenario_path)
 
     def play(
         self, button
