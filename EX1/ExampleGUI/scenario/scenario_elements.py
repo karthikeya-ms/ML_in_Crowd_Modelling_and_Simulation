@@ -2,6 +2,7 @@ from __future__ import annotations
 import json
 import numpy as np
 from math import sqrt
+from dataclasses import dataclass
 from numpy.typing import NDArray
 from shared_types import Location, Color
 
@@ -43,7 +44,7 @@ class Scenario:
         self.pedestrians: list[Pedestrian] = []
         self.targets: set[Location] = set()
         self.obstacles: set[Location] = set()
-        self.measure_points: set[Location] = set()
+        self.measure_points: list[MeasuringPoint] = []
         self.width = width
         self.height = height
 
@@ -66,18 +67,16 @@ class Scenario:
                 or m["y"] + m["height"] < 0:
                     continue
                 
-                self.measure_points.add(MeasuringPoint(m["x"], m["y"], m["width"], m["height"]))
+                self.measure_points.append(MeasuringPoint(m["x"], m["y"], m["width"], m["height"]))
 
         self.fast_marching = FastMarchingMethod(
-            self.width, self.height, targets=self.targets, obstacles=self.obstacles, measure_points=self.measure_points
-        )
+            self.width, self.height, targets=self.targets, obstacles=self.obstacles)
 
         self.recompute_target_distances()
 
     def recompute_target_distances(self) -> None:
         self.fast_marching = FastMarchingMethod(
-            self.width, self.height, targets=self.targets, obstacles=self.obstacles, measure_points=self.measure_points
-        )
+            self.width, self.height, targets=self.targets, obstacles=self.obstacles)
 
     def update_step(self) -> None:
         """
@@ -87,7 +86,15 @@ class Scenario:
         """
         for pedestrian in self.pedestrians:
             pedestrian.update_step(self)
+        
+        for measuring_point in self.measure_points:
+            measuring_point.calculate_information(self)
 
+
+@dataclass(kw_only=True)
+class MeasuringPointInfo:
+    pedestrian_count: int
+    average_speed: float
 
 class MeasuringPoint:
     
@@ -96,6 +103,20 @@ class MeasuringPoint:
         self.y = y
         self.width = width
         self.height = height
+        self.history = []
+
+    def calculate_information(self, scenario: Scenario):
+        inside = lambda p: self.x <= p.position[0] < self.x + self.width and self.y <= p.position[1] <  self.y + self.height
+        pedestrians_in: list[Pedestrian] = list(filter(inside, scenario.pedestrians))
+        number_of_pedestrians = len(pedestrians_in)
+        speed_sum = sum(list(map(lambda p: p.desired_speed, pedestrians_in)))
+        speed_avg = speed_sum / number_of_pedestrians if number_of_pedestrians > 0 else 0
+        print(f"[second {len(self.history)}] Measuring point ({self.x},{self.y}) recorded: {number_of_pedestrians} pedestrians, average speed of {speed_avg} m/s")
+
+        current_info = MeasuringPointInfo(pedestrian_count=number_of_pedestrians, average_speed=speed_avg)
+        self.history.append(current_info)
+        return current_info
+
 
 class Pedestrian:
     """
