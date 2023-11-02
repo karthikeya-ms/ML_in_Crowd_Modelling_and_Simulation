@@ -10,7 +10,7 @@ In there install all the dependencies (python 3.10+):
 pip install -r requirements.txt
 ```
 
-Finnaly, start the automata with:
+Finally, start the automata with:
 ```bash
 python main.py
 ```
