@@ -5,6 +5,8 @@ from math import sqrt
 from dataclasses import dataclass
 from numpy.typing import NDArray
 from shared_types import Location, Color
+import warnings
+
 
 from scenario.fast_marching_method import FastMarchingMethod
 
@@ -89,33 +91,87 @@ class Scenario:
         
         for measuring_point in self.measure_points:
             measuring_point.calculate_information(self)
+            measuring_point.get_average_over_period(10, 70)
 
 
 @dataclass(kw_only=True)
 class MeasuringPointInfo:
+    """
+    class containing information about number of pedestrians
+    and their average speed in a measuring point at an instant.
+    """
+
     pedestrian_count: int
     average_speed: float
 
 class MeasuringPoint:
-    
+    """
+    A Measuring point for task 5, test 2.
+
+        Attributes:
+    -----------
+    x: x-coordinate of measurement area
+    y: y-coordinate of measurement area
+    width: width of measurement area
+    height: height of measurement area
+    history: a list of past measurements
+    """
     def __init__(self, x: int, y: int, width: int, height: int) -> None:
+        """
+        Creates an instance of the MeasuringPoint.
+
+        Args:
+            x (int): x-coordinate of measurement area.
+            y (int): y-coordinate of measurement area.
+            width (int): width of the area.
+            height (int): height of the height.
+        """
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.history = []
+        self.history:list[MeasuringPointInfo] = []
 
     def calculate_information(self, scenario: Scenario):
+        """
+        MeasuringPointInfo : the number of pedestrians and average speed recorded this instant.
+
+        Args:
+            scenario (Scenario): the scenario calling the function
+        """
         inside = lambda p: self.x <= p.position[0] < self.x + self.width and self.y <= p.position[1] <  self.y + self.height
         pedestrians_in: list[Pedestrian] = list(filter(inside, scenario.pedestrians))
         number_of_pedestrians = len(pedestrians_in)
         speed_sum = sum(list(map(lambda p: p.desired_speed, pedestrians_in)))
         speed_avg = speed_sum / number_of_pedestrians if number_of_pedestrians > 0 else 0
-        print(f"[second {len(self.history)}] Measuring point ({self.x},{self.y}) recorded: {number_of_pedestrians} pedestrians, average speed of {speed_avg} m/s")
+        print(f"[second {len(self.history) + 1}] Measuring point ({self.x},{self.y}) recorded: {number_of_pedestrians} pedestrians, average speed of {speed_avg} m/s")
 
         current_info = MeasuringPointInfo(pedestrian_count=number_of_pedestrians, average_speed=speed_avg)
         self.history.append(current_info)
         return current_info
+    
+    def get_average_over_period(self, start_second: int, end_second: int):
+        """
+        MeasuringPointInfo : the average number of pedestrians over the given period,
+        and the average of average speeds over the given period.
+
+        Args:
+            start_second (int): the second we start measuring from.
+            end_second (int): the last second of measurement.
+        """
+                
+        points = self.history[start_second: end_second + 1]
+        point_count = len(points)
+        count_sum = sum(list(map(lambda p: p.pedestrian_count, points)))
+        avg_speed_sum = sum(list(map(lambda p: p.average_speed, points)))
+        avg_count = count_sum / point_count if point_count > 0 else 0
+        avg_avg_speed = avg_speed_sum / point_count if point_count > 0 else 0
+
+        if len(points) < end_second - start_second + 1:
+            warnings.warn("Not enough points to cover the specified period")
+        else:
+            print(f"[seconds {start_second}:{start_second + point_count - 1}] Measuring point ({self.x},{self.y}) aggregatted: {avg_count} average pedestrian count, average speed of {avg_avg_speed} m/s")
+        return MeasuringPointInfo(pedestrian_count=avg_count, average_speed=avg_avg_speed)
 
 
 class Pedestrian:
