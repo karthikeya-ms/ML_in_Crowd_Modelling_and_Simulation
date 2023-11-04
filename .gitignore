@@ -162,3 +162,8 @@ cython_debug/
 **/scenarios/my_*.json
 
 log.out
+
+
+
+# IntelliJ-based IDE in EX2 root folder
+EX2/.idea
