@@ -1,0 +1,23 @@
+[project]
+name = "scenario-customizer"
+description = "Provides a script to customize Vadere scenarios."
+authors = [
+    { name = "Diogo Nogueira" },
+    { name = "Mohammed El-Shaikh" },
+    { name = "Siva Karthikeya Mandarapu" },
+    { name = "Ahmed Mokhtar" },
+    { name = "Amgad Al-Zamkan" }
+]
+version = "0.1.0"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["scenario_customizer*"]
+
+[project.scripts]
+scenario-customizer = "scenario_customizer.main:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
