@@ -94,7 +94,7 @@
       }
     },
     "attributesSimulation" : {
-      "finishTime" : 100.0,
+      "finishTime" : 50.0,
       "simTimeStepLength" : 0.4,
       "realTimeSimTimeRatio" : 0.1,
       "writeSimulationData" : true,
@@ -131,43 +131,23 @@
         "bounds" : {
           "x" : 0.0,
           "y" : 0.0,
-          "width" : 40.0,
-          "height" : 4.0
+          "width" : 43.4,
+          "height" : 3.0
         },
         "boundingBoxWidth" : 0.5,
         "bounded" : true,
         "referenceCoordinateSystem" : null
       },
-      "obstacles" : [ {
-        "id" : 4,
-        "shape" : {
-          "x" : 0.5,
-          "y" : 2.5,
-          "width" : 38.98594173441736,
-          "height" : 1.0,
-          "type" : "RECTANGLE"
-        },
-        "visible" : true
-      }, {
-        "id" : 5,
-        "shape" : {
-          "x" : 0.5,
-          "y" : 0.5,
-          "width" : 39.02238571342441,
-          "height" : 1.0,
-          "type" : "RECTANGLE"
-        },
-        "visible" : true
-      } ],
+      "obstacles" : [ ],
       "measurementAreas" : [ ],
       "stairs" : [ ],
       "targets" : [ {
         "id" : 2,
         "shape" : {
-          "x" : 38.5,
-          "y" : 1.5,
-          "width" : 1.0,
-          "height" : 1.0,
+          "x" : 40.9,
+          "y" : 0.4992000000000001,
+          "width" : 2.0,
+          "height" : 2.0,
           "type" : "RECTANGLE"
         },
         "visible" : true,
@@ -189,7 +169,7 @@
       "sources" : [ ],
       "dynamicElements" : [ {
         "attributes" : {
-          "id" : 6,
+          "id" : 1,
           "shape" : {
             "x" : 0.0,
             "y" : 0.0,
@@ -200,10 +180,10 @@
           "visible" : true,
           "radius" : 0.2,
           "densityDependentSpeed" : false,
-          "speedDistributionMean" : 1.34,
+          "speedDistributionMean" : 1.33,
           "speedDistributionStandardDeviation" : 0.26,
-          "minimumSpeed" : 0.5,
-          "maximumSpeed" : 2.2,
+          "minimumSpeed" : 1.25,
+          "maximumSpeed" : 1.42,
           "acceleration" : 2.0,
           "footstepHistorySize" : 4,
           "searchRadius" : 1.0,
@@ -215,14 +195,14 @@
         "nextTargetListIndex" : 0,
         "isCurrentTargetAnAgent" : false,
         "position" : {
-          "x" : 0.9,
-          "y" : 2.0
+          "x" : 0.7,
+          "y" : 1.5
         },
         "velocity" : {
           "x" : 0.0,
           "y" : 0.0
         },
-        "freeFlowSpeed" : 1.3153869768659683,
+        "freeFlowSpeed" : 1.572835195500785,
         "followers" : [ ],
         "idAsTarget" : -1,
         "isChild" : false,
