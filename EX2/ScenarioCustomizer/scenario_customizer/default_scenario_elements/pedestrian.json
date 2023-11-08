@@ -1,0 +1,66 @@
+{
+    "attributes" : {
+      "id" : null,
+      "shape" : {
+        "x" : 0.0,
+        "y" : 0.0,
+        "width" : 1.0,
+        "height" : 1.0,
+        "type" : "RECTANGLE"
+      },
+      "visible" : true,
+      "radius" : 0.2,
+      "densityDependentSpeed" : false,
+      "speedDistributionMean" : 1.34,
+      "speedDistributionStandardDeviation" : 0.26,
+      "minimumSpeed" : 0.5,
+      "maximumSpeed" : 2.2,
+      "acceleration" : 2.0,
+      "footstepHistorySize" : 4,
+      "searchRadius" : 1.0,
+      "walkingDirectionSameIfAngleLessOrEqual" : 45.0,
+      "walkingDirectionCalculation" : "BY_TARGET_CENTER"
+    },
+    "source" : null,
+    "targetIds" : [ ],
+    "nextTargetListIndex" : 0,
+    "isCurrentTargetAnAgent" : false,
+    "position" : {
+      "x" : null,
+      "y" : null
+    },
+    "velocity" : {
+      "x" : 0.0,
+      "y" : 0.0
+    },
+    "freeFlowSpeed" : 1.3153869768659683,
+    "followers" : [ ],
+    "idAsTarget" : -1,
+    "isChild" : false,
+    "isLikelyInjured" : false,
+    "psychologyStatus" : {
+      "mostImportantStimulus" : null,
+      "threatMemory" : {
+        "allThreats" : [ ],
+        "latestThreatUnhandled" : false
+      },
+      "selfCategory" : "TARGET_ORIENTED",
+      "groupMembership" : "OUT_GROUP",
+      "knowledgeBase" : {
+        "knowledge" : [ ],
+        "informationState" : "NO_INFORMATION"
+      },
+      "perceivedStimuli" : [ ],
+      "nextPerceivedStimuli" : [ ]
+    },
+    "healthStatus" : null,
+    "infectionStatus" : null,
+    "groupIds" : [ ],
+    "groupSizes" : [ ],
+    "agentsInGroup" : [ ],
+    "trajectory" : {
+      "footSteps" : [ ]
+    },
+    "modelPedestrianMap" : null,
+    "type" : "PEDESTRIAN"
+} 
