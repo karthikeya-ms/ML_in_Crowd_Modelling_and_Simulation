@@ -6,6 +6,8 @@
 - Simulation is nondeterministic. Is it possible to standardize?
     - We get slightly different results on different machines using the same scenario file
         - Even using the same seeds!
+- Is it normal that the SIR model does not terminate by itself and we have to press the stop simulation button?
+  - It also does not save the specified pedestrian groups in the output files, but SIR information are written correctly 
 
 ### Extra pedantic questions just to be sure:
 - We use the source version of Vadere for tasks 1-3. Is that okay?
