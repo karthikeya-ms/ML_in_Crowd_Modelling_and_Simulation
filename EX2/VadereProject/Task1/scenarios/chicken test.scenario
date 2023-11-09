@@ -2,6 +2,7 @@
   "name" : "chicken test",
   "description" : "",
   "release" : "2.4",
+  "commithash" : "No version control commit hash available!",
   "processWriters" : {
     "files" : [ {
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
@@ -93,7 +94,7 @@
       }
     },
     "attributesSimulation" : {
-      "finishTime" : 500.0,
+      "finishTime" : 50.0,
       "simTimeStepLength" : 0.4,
       "realTimeSimTimeRatio" : 0.1,
       "writeSimulationData" : true,
@@ -181,9 +182,9 @@
         "id" : 1,
         "shape" : {
           "x" : 7.7,
-          "y" : 4.5,
-          "width" : 0.8,
-          "height" : 1.0,
+          "y" : 4.8,
+          "width" : 0.5,
+          "height" : 0.5,
           "type" : "RECTANGLE"
         },
         "visible" : true,

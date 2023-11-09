@@ -2,7 +2,6 @@
   "name" : "Scenario 1",
   "description" : "",
   "release" : "2.4",
-  "commithash" : "No version control commit hash available!",
   "processWriters" : {
     "files" : [ {
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
