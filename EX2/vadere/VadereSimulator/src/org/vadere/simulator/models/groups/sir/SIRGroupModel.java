@@ -131,9 +131,15 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 		// get all pedestrians already in topography
 		DynamicElementContainer<Pedestrian> c = topography.getPedestrianDynamicElements();
 
-		if (c.getElements().size() > 0) {
+		if (!c.getElements().isEmpty()) {
 			// Here you can fill in code to assign pedestrians in the scenario at the beginning (i.e., not created by a source)
             //  to INFECTED or SUSCEPTIBLE groups. This is not required in the exercise though.
+
+			for(Pedestrian p : c.getElements()) {
+				if(!p.getGroupIds().isEmpty()) {
+					assignToGroup(p, p.getGroupIds().getFirst());
+				}
+			}
 		}
 	}
 
