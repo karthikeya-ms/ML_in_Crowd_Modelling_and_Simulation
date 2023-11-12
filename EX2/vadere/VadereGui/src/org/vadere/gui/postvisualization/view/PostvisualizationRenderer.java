@@ -11,9 +11,11 @@ import org.vadere.state.simulation.FootStep;
 import org.vadere.util.geometry.shapes.VPoint;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.io.csv.CsvReadOptions;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +50,12 @@ public class PostvisualizationRenderer extends SimulationRenderer {
 
 			Table slice = (model.config.isShowAllTrajectories()) ? model.getAppearedPedestrians() : model.getAlivePedestrians() ;
 			Collection<Pedestrian> pedestrians = model.getPedestrians();
-
+			HashMap<Integer, Integer> pedestrian_groups = getSIRGroups(this.model.getSimTimeInSec(), this.model.getTimeResolution());
+			for (Pedestrian ped : pedestrians){
+				if (pedestrian_groups.containsKey(ped.getId())){
+					ped.getGroupIds().addFirst(pedestrian_groups.get(ped.getId()));
+				}
+			}
 			Map<Integer, Color> pedestrianColors = new HashMap<>();
 			pedestrians.forEach(ped -> pedestrianColors.put(ped.getId(),  getPedestrianColor(ped)));
 
@@ -57,6 +64,29 @@ public class PostvisualizationRenderer extends SimulationRenderer {
 			renderConnectingLinesByContact(g);
 
 			g.setColor(savedColor);
+		}
+	}
+
+	private HashMap<Integer, Integer> getSIRGroups(double visTime, double resolution){
+		HashMap<Integer, Integer> pedGroups = new HashMap<Integer, Integer>();
+		try {
+			CsvReadOptions.Builder builder =
+					CsvReadOptions.builder(this.model.getOutputPath() + "/SIRinformation.csv")
+							.separator(' ');
+			CsvReadOptions options = builder.build();
+
+			Table groupTable = Table.read().usingOptions(options);
+			Table timeGroupTable = groupTable.where(groupTable.doubleColumn(1).isCloseTo(visTime, resolution));
+			for (int i = 0; i < timeGroupTable.rowCount(); i++) {
+				int ped_id = timeGroupTable.intColumn(0).get(i);
+				int group_id = timeGroupTable.intColumn(2).get(i);
+				pedGroups.put(ped_id, group_id);
+			}
+			return pedGroups;
+		}
+		catch (Exception e){
+			System.out.println("Could not read SIRinformation.csv");
+			return  pedGroups;
 		}
 	}
 
