@@ -13,9 +13,12 @@ import org.vadere.state.attributes.Attributes;
 import org.vadere.simulator.models.groups.sir.SIRGroup;
 import org.vadere.state.attributes.models.AttributesSIRG;
 import org.vadere.state.attributes.scenario.AttributesAgent;
+import org.vadere.state.scenario.Agent;
 import org.vadere.state.scenario.DynamicElementContainer;
 import org.vadere.state.scenario.Pedestrian;
 import org.vadere.state.scenario.Topography;
+import org.vadere.util.geometry.LinkedCellsGrid;
+import org.vadere.util.geometry.shapes.VPoint;
 
 import java.util.*;
 
@@ -189,25 +192,64 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 	@Override
 	public void update(final double simTimeInSec) {
 		// check the positions of all pedestrians and switch groups to INFECTED (or REMOVED).
-		DynamicElementContainer<Pedestrian> c = topography.getPedestrianDynamicElements();
+		final DynamicElementContainer<Pedestrian> c = topography.getPedestrianDynamicElements();
 
-		if (c.getElements().size() > 0) {
-			for(Pedestrian p : c.getElements()) {
-				// loop over neighbors and set infected if we are close
-				for(Pedestrian p_neighbor : c.getElements()) {
-					if(p == p_neighbor || getGroup(p_neighbor).getID() != SIRType.ID_INFECTED.ordinal())
-						continue;
-					double dist = p.getPosition().distance(p_neighbor.getPosition());
-					if (dist < attributesSIRG.getInfectionMaxDistance() &&
-							this.random.nextDouble() < attributesSIRG.getInfectionRate()) {
-						SIRGroup g = getGroup(p);
-						if (g.getID() == SIRType.ID_SUSCEPTIBLE.ordinal()) {
-							elementRemoved(p);
-							assignToGroup(p, SIRType.ID_INFECTED.ordinal());
-						}
-					}
-				}
-			}
-		}
-	}
+		// By Mohammed: This is the efficient distance implementation from Task 4.4
+        // TODO: Test the efficient method and remove this flag
+        final boolean usingEfficientMethod = false;
+
+        if (usingEfficientMethod) {
+            // We don't actually need to cache this because access is O(1). Doing it for cleanness
+            final LinkedCellsGrid<Pedestrian> linkedCellsGrid = topography.getSpatialMap(Pedestrian.class);
+
+		 /* Just like the original implementation, we loop over the infected pedestrians first, and get the pedestrians within its radius.
+		    This means that if a susceptible pedestrian is near N infected pedestrians, their infection rate is 4 times higher */
+            c.getElements()
+                    .stream()
+                    // Get only infected
+                    .filter(ped -> getGroup(ped).getID() == SIRType.ID_INFECTED.ordinal())
+                    // For now, we only care about the positions. We don't need to change the infected (in this implementation)
+                    .map(Agent::getPosition)
+                    .forEach(infectedPos -> {
+                                // No need to calculate dist for all other pedestrians anymore compared to original implementation. O(1) access to supplied radius
+                                final Collection<Pedestrian> neighbors = linkedCellsGrid.getObjects(infectedPos, attributesSIRG.getInfectionMaxDistance());
+
+                                // O(N_neighbors) rather than O(N_pedestrians)
+                                neighbors.stream()
+                                        // We only care about the susceptible pedestrians
+                                        // Note that this also filters out the infected pedestrian whose position is `infectedPos`
+                                        .filter(p -> getGroup(p).getID() == SIRType.ID_SUSCEPTIBLE.ordinal())
+                                        // We randomly infect our susceptible pedestrians
+                                        .forEach(susceptiblePed -> {
+                                            if (this.random.nextDouble() < attributesSIRG.getInfectionRate()) {
+                                                elementRemoved(susceptiblePed);
+                                                assignToGroup(susceptiblePed, SIRType.ID_INFECTED.ordinal());
+                                            }
+                                        });
+                            }
+                    );
+        } else {
+			// This is the original code for the distance calculation, it performs O(n^2) distance calculations
+            if (c.getElements().size() > 0) {
+                for (Pedestrian p : c.getElements()) {
+                    // loop over neighbors and set infected if we are close
+                    for (Pedestrian p_neighbor : c.getElements()) {
+                        if (p == p_neighbor || getGroup(p_neighbor).getID() != SIRType.ID_INFECTED.ordinal())
+                            continue;
+                        double dist = p.getPosition().distance(p_neighbor.getPosition());
+                        if (dist < attributesSIRG.getInfectionMaxDistance() &&
+                                this.random.nextDouble() < attributesSIRG.getInfectionRate()) {
+                            SIRGroup g = getGroup(p);
+                            if (g.getID() == SIRType.ID_SUSCEPTIBLE.ordinal()) {
+                                elementRemoved(p);
+                                assignToGroup(p, SIRType.ID_INFECTED.ordinal());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
 }
