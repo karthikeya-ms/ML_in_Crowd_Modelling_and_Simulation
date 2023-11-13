@@ -1,6 +1,11 @@
+"""
+This module contains the core logic of scenario handling.
+It provides a main class Scenario that serves as an interface between 
+scenario customization operations and the json of the scenario file.
+"""
 import json
 from importlib.resources import files
-from typing import Optional
+from typing import Optional, Any
 from random import randint
 
 
@@ -18,15 +23,34 @@ required_property_tree = {
     }
 }
 
-def assert_valid_scenario_spec(prop, scenario_spec, scenario) -> Optional[tuple[str, str]]:
+def assert_valid_scenario_spec(prop: Any, scenario_spec: Any, scenario_tree: dict) -> Optional[tuple[str, str]]:
+    """Validates the specification on a node in the validation tree (usually a leaf).
+    
+    Validates that the property prop of the dictionary scenario_tree agrres with scenario_spec.
+    Allows for multiple types of validation depending on scenario_spec being:
+        - A type:
+            Checks if the type of the property is the specified one.
+        - Otherwise:
+            Checks for equality (==) between the property and the specification.
+    This method is meant as a helper to the method 'assert_valid_scenario_recursive'.
+    
+    Args:
+        prop (Any): The property of scenario_tree to check.
+        scenario_spec (Any): The specification that the property must meet.
+        scenario_tree (dict): The dictionary containing the property.
+
+    Returns:
+        Optional[tuple[str, str]]: If the property doesn't meet the specification returns a tuple 
+                                   to constrcut the error message. Otherwise returns None.
+    """
     if isinstance(scenario_spec, type):
-        if isinstance(scenario, scenario_spec):
+        if isinstance(scenario_tree, scenario_spec):
             return None
 
         return (f"The property '{prop}' does not contained the expected type '{scenario_spec}'. "
                 "Expected path: "), prop
 
-    if scenario_spec == scenario:
+    if scenario_spec == scenario_tree:
         return None
 
     return (f"The property '{prop}' does not contained the expected value:\n"
@@ -35,12 +59,30 @@ def assert_valid_scenario_spec(prop, scenario_spec, scenario) -> Optional[tuple[
 
 
 
-def assert_valid_scenario_recursive(properties_tree: dict, scenario_tree: dict) -> Optional[tuple[str, str]]:
+def assert_valid_scenario_recursive(properties_tree: dict, scenario_tree: Any) -> Optional[tuple[str, str]]:
+    """Recursive function to validate a scenario file's json.
+    
+    This function will check that all keys in properties_tree are in scenario_tree. Then for each key:
+        - If the value is a dictionary:
+            Recursive call to investigate/validate the dictionary;
+        - If the value is None:
+            Arbitrary branch, meaning it returns None;
+        - Otherwise:
+            Validates the specification of this node in the tree (usually leaf in validation);
+
+    Args:
+        properties_tree (dict): A dictionary whose keys must be present in the scenario_tree dictionary.
+        scenario_tree (Any): A subtree of the scenario file. In any other case the file is invalid.
+
+    Returns:
+        Optional[tuple[str, str]]: If the scenario is invalid returns a tuple 
+                                   to constrcut the error message. Otherwise returns None.
+    """
     for prop in properties_tree:
-        if prop not in scenario_tree:
+        if not isinstance(scenario_tree, dict) or prop not in scenario_tree:
             return f"The property '{prop}' was not found. Expected path: ", prop
 
-        if type(properties_tree[prop]) is dict:
+        if isinstance(properties_tree[prop], dict):
             result = assert_valid_scenario_recursive(properties_tree[prop], scenario_tree[prop])
         elif properties_tree[prop] is None:
             result = None
@@ -55,6 +97,7 @@ def assert_valid_scenario_recursive(properties_tree: dict, scenario_tree: dict) 
 
 
 class InvalidScenarioError(Exception):
+    """Exception class for invalid scenarios."""
 
     def __init__(
         self,

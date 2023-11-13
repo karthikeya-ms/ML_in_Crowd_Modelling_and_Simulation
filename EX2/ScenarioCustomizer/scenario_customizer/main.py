@@ -1,6 +1,9 @@
+"""
+This module defines the main method of the tool and some helper methods.
+This method contains the main flow of the tool from parsing arguments to 
+the interactive choice menu and their coordination.
+"""
 import argparse
-import sys
-from json import JSONDecodeError
 
 from scenario_customizer import EXIT_KEY, HOME_KEY
 from scenario_customizer.scenario import Scenario
@@ -40,7 +43,6 @@ def add_pedestrian(scenario: Scenario):
         print("Could not add the pedestrian! Targets added are not subset of available targets!")
     else:
         print(f"Pedestrian added with id {pedestrian_id}.")
-        scenario.save()
 
 def apply_arguments(args: argparse.ArgumentParser, scenario: Scenario) -> None:
     """Applies command line argument specified changes to the scenario.
@@ -56,7 +58,14 @@ def apply_arguments(args: argparse.ArgumentParser, scenario: Scenario) -> None:
     scenario.save()
 
 def main():
-
+    """
+    Contains the main tool execution flow.
+    
+    First arguments are parsed. Then the main scenario and save file parameters are obtained
+    which is followed by applying the changes specyfied in the command line arguments and saving them.
+    Finnaly, in interactive mode, the choice menu gives the user the oppurunity to dynamically customize
+    the scenario.
+    """
     parser = argparse.ArgumentParser(
         prog="Vadere Scenario Customizer",
         description="A tool to programatically customize Vadere scenario files using the command line."
@@ -134,6 +143,8 @@ def main():
             try:
                 if choice == 1:
                     add_pedestrian(scenario)
+
+                scenario.save()
             except KeyboardInterrupt:
                 # Used to come back to main menu
                 pass
