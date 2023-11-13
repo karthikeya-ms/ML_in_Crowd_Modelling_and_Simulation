@@ -3,48 +3,29 @@ import sys
 from json import JSONDecodeError
 
 from scenario_customizer.scenario import Scenario, InvalidScenarioError
-from scenario_customizer.cli_input import cli_input
+from scenario_customizer.cli_input import string_input, scenario_input, EXIT_KEY, HOME_KEY, output_file_path_input
 
+def add_pedestrian(scenario: Scenario):
+    """Requests the parameters from the user to create a new pedestrian.
 
-def read_scenario_file() -> Scenario:
-    print("Welcome to the Scenario Customizer.")
-    print("To get started insert the path to the Scenario file you wish to costumize: (q to exit)")
-    scenario = None
-    while scenario is None:
-        try:
-            scenario_path = input("> ")
-
-            if scenario_path == "q":
-                raise EOFError()
-
-            scenario = Scenario(scenario_path)
-        except FileNotFoundError:
-            print(f"The file '{scenario_path}' was not found! (q to exit)")
-        except JSONDecodeError:
-            print(f"The file '{scenario_path}' is not valid json! (q to exit)")
-        except InvalidScenarioError as e:
-            print(e.error_message)
-
-    return scenario
-
-def add_pedestrian(scenario):
-    print("oi")
-    x, y = cli_input(
-        "Please insert the position of the pedestrian following the pattern 'x,y':",
-        r"^\d+([.]\d+)?,\d+([.]\d+)?$",
-        "Invalid position! The position must follow the pattern 'x,y'."
+    Args:
+        scenario (Scenario): The scenatio in which to add the new pedestrian.
+    """
+    x, y = string_input(
+        menu_prompt="Please insert the position of the pedestrian following the pattern 'x,y':",
+        input_regex=r"^\d+([.]\d+)?,\d+([.]\d+)?$",
+        fail_regex_message="Invalid position! The position must follow the pattern 'x,y'."
     ).split(',')
-    print("oi")
 
     x, y = float(x), float(y)
 
     print("Finnaly, please insert the target ids for this pedestrian: (s to stop)")
     target_ids = set()
     while True:
-        new_id = cli_input(
-            "Next id: (s to stop)",
-            r"^(\d+|[s])$",
-            "Invalid id!"
+        new_id = string_input(
+            menu_prompt="Next id: (s to stop)",
+            input_regex=r"^(\d+|[s])$",
+            fail_regex_message="Invalid id!"
         )
         if new_id == "s":
             break
@@ -53,24 +34,10 @@ def add_pedestrian(scenario):
 
     pedestrian_id = scenario.add_pedestrian(x, y, target_ids)
     if pedestrian_id is None:
-        print("Could not add the pedestrian!")
+        print("Could not add the pedestrian! Targets added are not subset of available targets!")
     else:
         print(f"Pedestrian added with id {pedestrian_id}.")
-
-def save_changes(scenario):
-    while True:
-        try:
-            print("Insert the path in which to save the new scenario:")
-            path = input('> ')
-            if path == "q":
-                raise EOFError()
-            scenario.save(path)
-            break
-        except FileExistsError:
-            print("Can't save changes to the same scenario file!")
-        except FileNotFoundError:
-            print("The provided path is invalid!")
-
+        scenario.save()
 
 
 def main():
@@ -98,7 +65,11 @@ def main():
 
     args = parser.parse_args()
 
+
     try:
+        scenario = None
+        output_file_path = None
+
         if args.filename is not None:
             try:
                 scenario = Scenario(args.filename)
@@ -108,22 +79,33 @@ def main():
             except InvalidScenarioError as e:
                 print(e.error_message)
                 sys.exit(1)
-        else:
-            scenario = read_scenario_file()
+
+        if scenario is None:
+            scenario = scenario_input()
+
+        if output_file_path is None:
+            output_file_path = output_file_path_input()
+
+        print("Welcome to the scenario customizer! At any time you can use:\n"
+             f"{EXIT_KEY} or ctrl+D to exit;\n"
+             f"{HOME_KEY} or ctrl+C to return to the main menu;"
+        )
 
         while True:
-            choice = int(cli_input(
-                ("Please choose an option: (q to quit)\n"
-                 "   1. Add pedestrian.\n"
-                 "   2. Save changes."),
-                r"^[1-2]$",
-                "Invalid choice!"
+            choice = int(string_input(
+                menu_prompt=("Please choose an option:\n"
+                "   1. Add pedestrian.\n"
+                "   2. Save changes."),
+                input_regex=r"^[1]$",
+                fail_regex_message="Invalid choice!"
             ))
 
-            if choice == 1:
-                add_pedestrian(scenario)
-            else:
-                save_changes(scenario)
+            try:
+                if choice == 1:
+                    add_pedestrian(scenario)
+            except KeyboardInterrupt:
+                # Used to come back to main menu
+                pass
 
     except (EOFError, KeyboardInterrupt):
         pass

@@ -98,6 +98,7 @@ class Scenario:
         self.assert_valid_scenario()
         # TODO check the name of all scenarios to create a unique one
         self.scenario_json["name"] = self.scenario_json["name"] + f"_{randint(0,100)}"
+        self.output_file_path = None
 
     @property
     def topography(self) -> dict:
@@ -155,13 +156,11 @@ class Scenario:
         Args:
             path (str): The path in which to save the scenario.
 
-        Raises:
-            FileExistsError: If the path is the one for the scenario being edited.
         """
-        if path == self.scenario_path:
-            raise FileExistsError()
+        if self.output_file_path is None:
+            raise FileNotFoundError()
 
-        with open(path, 'w') as file:
+        with open(path, 'w', encoding='utf-8') as file:
             json.dump(self.scenario_json, file, indent=2, separators=(',', ' : '))
 
     def add_pedestrian(self, x: float, y: float, target_ids: set[int]) -> Optional[int]:
@@ -171,17 +170,17 @@ class Scenario:
             x (float): The position of the new pedestrian on the x axis.
             y (float): The position of the new pedestrian on the y axis.
             target_ids (list[int]): The ids of this pedestrian's targets.
-        
+
         Returns:
             Optional[int] : The id of the new pedestrian if it was created.
         """
-        
+
         # Check target ids exist
         existing_target_ids = { target["id"] for target in self.topography["targets"] }
         for target_id in target_ids:
             if target_id not in existing_target_ids:
                 return
-                
+
         # Load default pedestrian json configuration
         with files("scenario_customizer.default_scenario_elements") \
             .joinpath('pedestrian.json').open('r') as pedestrian_file:
@@ -192,8 +191,8 @@ class Scenario:
         pedestrian["position"]["x"] = x
         pedestrian["position"]["y"] = y
         pedestrian["targetIds"].extend(target_ids)
-        
+
 
         self.topography["dynamicElements"].append(pedestrian)
-        
+
         return pedestrian["attributes"]["id"]
