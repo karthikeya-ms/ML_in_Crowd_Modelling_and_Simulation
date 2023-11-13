@@ -5,15 +5,36 @@ from the command line with some automatic sanitization.
 import re
 from json import JSONDecodeError
 
+from scenario_customizer import EXIT_KEY, HOME_KEY
 from scenario_customizer.scenario import Scenario, InvalidScenarioError
 
 CLI_PROMPT = '> '
-EXIT_KEY = 'q'
-HOME_KEY = 'b'
 
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 END = '\033[0m'
+
+def bold(string: str) -> str:
+    """Turns a string bold.
+
+    Args:
+        string (str): The string to trun bold.
+
+    Returns:
+        str: The new bold string.
+    """
+    return f"{BOLD}{string}{END}"
+
+def underline(string: str) -> str:
+    """Underlines a string.
+
+    Args:
+        string (str): The string to underline.
+
+    Returns:
+        str: The new underlined string.
+    """
+    return f"{UNDERLINE}{string}{END}"
 
 def string_input(
     menu_prompt: str = "",
@@ -69,13 +90,13 @@ def scenario_input() -> Scenario:
             # matches anything, however ensures 'q' still exits (raises EOF)
             scenario_path = string_input(
                 menu_prompt=("Insert the "
-                            f"{UNDERLINE}{BOLD}path to the scenario file{END}{END}"
+                            f"{underline(bold('path to the scenario file'))}"
                              " you wish to costumize:"
                             )
             )
 
             scenario = Scenario(scenario_path)
-        except FileNotFoundError:
+        except (FileNotFoundError, IsADirectoryError):
             print(f"The file '{scenario_path}' was not found!")
         except JSONDecodeError:
             print(f"The file '{scenario_path}' is not valid json!")
@@ -94,7 +115,7 @@ def output_file_path_input() -> str:
         try:
             output_file_path = string_input(
                 menu_prompt=( "Insert the "
-                             f"{UNDERLINE}{BOLD}path to the save file{END}{END},"
+                             f"{underline(bold('path to the save file'))},"
                               " in which to save the new scenario:"
                             ),
                 input_regex=r"[0-9a-zA-Z_][^/\\]*\.scenario$",
@@ -106,5 +127,5 @@ def output_file_path_input() -> str:
                 pass
 
             return output_file_path
-        except FileNotFoundError:
+        except (FileNotFoundError, IsADirectoryError):
             print("The provided path is invalid!")

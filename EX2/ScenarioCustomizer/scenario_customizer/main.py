@@ -2,8 +2,11 @@ import argparse
 import sys
 from json import JSONDecodeError
 
-from scenario_customizer.scenario import Scenario, InvalidScenarioError
-from scenario_customizer.cli_input import string_input, scenario_input, EXIT_KEY, HOME_KEY, output_file_path_input
+from scenario_customizer import EXIT_KEY, HOME_KEY
+from scenario_customizer.scenario import Scenario
+from scenario_customizer.argument_parsing import parse_filename, parse_output
+from scenario_customizer.cli_input import string_input, scenario_input, output_file_path_input
+
 
 def add_pedestrian(scenario: Scenario):
     """Requests the parameters from the user to create a new pedestrian.
@@ -39,6 +42,18 @@ def add_pedestrian(scenario: Scenario):
         print(f"Pedestrian added with id {pedestrian_id}.")
         scenario.save()
 
+def apply_arguments(args: argparse.ArgumentParser, scenario: Scenario) -> None:
+    """Applies command line argument specified changes to the scenario.
+
+    Args:
+        args (argparse.ArgumentParser): The container for the command line arguments.
+        scenario (Scenario): The scenario in which the changes will be applied.
+    """
+    if args.pedestrians is not None:
+        for p in args.pedestrians:
+            scenario.add_pedestrian(p[0], p[1], p[2])
+
+    scenario.save()
 
 def main():
 
@@ -49,42 +64,59 @@ def main():
 
     parser.add_argument(
         '-f', '--filename', 
+        type=parse_filename,
         help="The path to the scenario file to edit."
     )
 
     parser.add_argument(
-        '-p', '--add-pedestrian',
-        help="Add a pedestrian as a position tuple x,y. To be implemented."
+        '-o', '--output',
+        type=parse_output,
+        help="The path to the output file where the new scenario will be saved. To be implemented."
     )
 
     parser.add_argument(
-        '-o', '--output',
-        help="The path to the output file where the new scenario will be saved. To be implemented."
+        '-s',
+        action='store_true',
+        help="A flag that, when active, skips all interactivity. This means the tool "
+             "will execute actions specified by command line arguments and then terminate."
+    )
+
+    parser.add_argument(
+        '-p', '--add-pedestrian',
+        dest='pedestrians',
+        help="Add a pedestrian as a tuple. It must come in the format: x,y(,t)* "
+              "where x and y are floats in the form 0.0 and each t "
+              "is an integer corresponding to the id of a target. "
+              "This option can be repeated any amount of times."
+        ,
+        action='append'
     )
 
 
     args = parser.parse_args()
 
+    scenario = args.filename
+    output_file_path = args.output
+    skip_interactivity = args.s
+
+    if skip_interactivity and (scenario is None or output_file_path is None):
+        print("Selected no interactivity without both scenario and output file specified. "
+              "No actions were performed.")
+        return
 
     try:
-        scenario = None
-        output_file_path = None
-
-        if args.filename is not None:
-            try:
-                scenario = Scenario(args.filename)
-            except (FileNotFoundError, JSONDecodeError):
-                print(f'The provided file path, {args.filname}, is invalid!')
-                sys.exit(1)
-            except InvalidScenarioError as e:
-                print(e.error_message)
-                sys.exit(1)
 
         if scenario is None:
             scenario = scenario_input()
 
         if output_file_path is None:
             output_file_path = output_file_path_input()
+
+        scenario.output_file_path = output_file_path
+        apply_arguments(args, scenario)
+
+        if skip_interactivity:
+            raise EOFError()
 
         print("Welcome to the scenario customizer! At any time you can use:\n"
              f"{EXIT_KEY} or ctrl+D to exit;\n"
@@ -94,8 +126,7 @@ def main():
         while True:
             choice = int(string_input(
                 menu_prompt=("Please choose an option:\n"
-                "   1. Add pedestrian.\n"
-                "   2. Save changes."),
+                "   1. Add pedestrian."),
                 input_regex=r"^[1]$",
                 fail_regex_message="Invalid choice!"
             ))
@@ -108,9 +139,7 @@ def main():
                 pass
 
     except (EOFError, KeyboardInterrupt):
-        pass
-
-
+        print("Your actions have been successfully performed and saved.")
 
 if __name__ == "__main__":
     main()

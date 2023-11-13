@@ -19,8 +19,8 @@ required_property_tree = {
 }
 
 def assert_valid_scenario_spec(prop, scenario_spec, scenario) -> Optional[tuple[str, str]]:
-    if type(scenario_spec) is type:
-        if type(scenario) is scenario_spec:
+    if isinstance(scenario_spec, type):
+        if isinstance(scenario, scenario_spec):
             return None
 
         return (f"The property '{prop}' does not contained the expected type '{scenario_spec}'. "
@@ -150,17 +150,12 @@ class Scenario:
                     scenario_path=self.scenario_path
                 )
 
-    def save(self, path: str):
-        """Saves the current version of the scenario in the provided path.
-
-        Args:
-            path (str): The path in which to save the scenario.
-
-        """
+    def save(self):
+        """Saves the current version of the scenario in the provided path."""
         if self.output_file_path is None:
             raise FileNotFoundError()
 
-        with open(path, 'w', encoding='utf-8') as file:
+        with open(self.output_file_path, 'w', encoding='utf-8') as file:
             json.dump(self.scenario_json, file, indent=2, separators=(',', ' : '))
 
     def add_pedestrian(self, x: float, y: float, target_ids: set[int]) -> Optional[int]:
