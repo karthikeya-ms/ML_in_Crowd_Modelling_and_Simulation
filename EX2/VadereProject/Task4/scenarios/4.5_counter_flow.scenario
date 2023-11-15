@@ -2,7 +2,6 @@
   "name" : "4.5_counter_flow",
   "description" : "",
   "release" : "2.4",
-  "commithash" : "c50f46b4db7cbf7b2e28607a33b953f6328c868c",
   "processWriters" : {
     "files" : [ {
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
@@ -102,7 +101,8 @@
       "org.vadere.state.attributes.models.AttributesSIRG" : {
         "infectionsAtStart" : 0,
         "infectionRate" : 0.05,
-        "infectionMaxDistance" : 1.0
+        "infectionMaxDistance" : 1.0,
+        "SIRTimeResolution" : 0.4
       }
     },
     "attributesSimulation" : {
