@@ -2,7 +2,6 @@
   "name" : "TestRecovered",
   "description" : "",
   "release" : "2.4",
-  "commithash" : "f35814aebef4e4738a18dc40ea33b141c5199f6f",
   "processWriters" : {
     "files" : [ {
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
@@ -66,7 +65,7 @@
         "targetPotentialModel" : "org.vadere.simulator.models.potential.fields.PotentialFieldTargetGrid",
         "pedestrianPotentialModel" : "org.vadere.simulator.models.potential.PotentialFieldPedestrianCompactSoftshell",
         "obstaclePotentialModel" : "org.vadere.simulator.models.potential.PotentialFieldObstacleCompactSoftshell",
-        "submodels" : [ ]
+        "submodels" : [ "org.vadere.simulator.models.groups.sir.SIRGroupModel" ]
       },
       "org.vadere.state.attributes.models.AttributesPotentialCompactSoftshell" : {
         "pedPotentialIntimateSpaceWidth" : 0.45,
@@ -101,10 +100,10 @@
       },
       "org.vadere.state.attributes.models.AttributesSIRG" : {
         "infectionsAtStart" : 0,
-        "infectionRate" : 0.01,
-        "infectionMaxDistance" : 1.0,
-        "recoveryRate" : 0.01,
-        "recoverBeforeSpread" : true,
+        "infectionRate" : 0.04,
+        "infectionMaxDistance" : 1.3,
+        "recoveryRate" : 0.02,
+        "recoverBeforeSpread" : false,
         "SIRTimeResolution" : 1.0
       }
     },
@@ -118,7 +117,7 @@
       "digitsPerCoordinate" : 2,
       "useFixedSeed" : true,
       "fixedSeed" : -2547192985682197551,
-      "simulationSeed" : 0
+      "simulationSeed" : -2547192985682197551
     },
     "attributesPsychology" : {
       "usePsychologyLayer" : false,
@@ -153,7 +152,83 @@
         "bounded" : true,
         "referenceCoordinateSystem" : null
       },
-      "obstacles" : [ ],
+      "obstacles" : [ {
+        "id" : 2,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : -1.0E-4,
+            "y" : -1.0E-4
+          }, {
+            "x" : 40.0001,
+            "y" : -1.0E-4
+          }, {
+            "x" : 40.0001,
+            "y" : 0.5001
+          }, {
+            "x" : -1.0E-4,
+            "y" : 0.5001
+          } ]
+        },
+        "visible" : true
+      }, {
+        "id" : 3,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : 40.0001,
+            "y" : -1.0E-4
+          }, {
+            "x" : 40.0001,
+            "y" : 40.0001
+          }, {
+            "x" : 39.4999,
+            "y" : 40.0001
+          }, {
+            "x" : 39.4999,
+            "y" : -1.0E-4
+          } ]
+        },
+        "visible" : true
+      }, {
+        "id" : 4,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : 40.0001,
+            "y" : 40.0001
+          }, {
+            "x" : -1.0E-4,
+            "y" : 40.0001
+          }, {
+            "x" : -1.0E-4,
+            "y" : 39.4999
+          }, {
+            "x" : 40.0001,
+            "y" : 39.4999
+          } ]
+        },
+        "visible" : true
+      }, {
+        "id" : 5,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : -1.0E-4,
+            "y" : 40.0001
+          }, {
+            "x" : -1.0E-4,
+            "y" : -1.0E-4
+          }, {
+            "x" : 0.5001,
+            "y" : -1.0E-4
+          }, {
+            "x" : 0.5001,
+            "y" : 40.0001
+          } ]
+        },
+        "visible" : true
+      } ],
       "measurementAreas" : [ ],
       "stairs" : [ ],
       "targets" : [ {
@@ -200,7 +275,7 @@
           "eventPositionRandom" : true,
           "eventPositionGridCA" : false,
           "eventPositionFreeSpace" : true,
-          "eventElementCount" : 300,
+          "eventElementCount" : 1300,
           "eventElement" : null,
           "distribution" : {
             "type" : "org.vadere.state.attributes.distributions.AttributesConstantDistribution",
