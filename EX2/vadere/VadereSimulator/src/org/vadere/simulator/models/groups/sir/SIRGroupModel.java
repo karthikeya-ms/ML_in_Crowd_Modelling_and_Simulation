@@ -162,6 +162,15 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 		assignToGroup(ped, groupId);
 	}
 
+	private boolean attemptRecover(Pedestrian infected) {
+		if (this.random.nextDouble() < this.attributesSIRG.getRecoveryRate()) {
+			elementRemoved(infected);
+			assignToGroup(infected, SIRType.ID_REMOVED.ordinal());
+			return true;
+		}
+		return false;
+	}
+
 
 	/* DynamicElement Listeners */
 
@@ -222,12 +231,10 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 						.stream()
 						// Get only infected
 						.filter(ped -> getGroup(ped).getID() == SIRType.ID_INFECTED.ordinal())
-						// For now, we only care about the positions. We don't need to change the infected (in this implementation)
-						.map(Agent::getPosition)
-						.forEach(infectedPos -> {
+						.filter(infected -> attributesSIRG.getRecoverBeforeSpread() && attemptRecover(infected))
+						.forEach(infected -> {
 									// No need to calculate dist for all other pedestrians anymore compared to original implementation. O(1) access to supplied radius
-									final Collection<Pedestrian> neighbors = linkedCellsGrid.getObjects(infectedPos, attributesSIRG.getInfectionMaxDistance());
-
+									final Collection<Pedestrian> neighbors = linkedCellsGrid.getObjects(infected.getPosition(), attributesSIRG.getInfectionMaxDistance());
 									// O(N_neighbors) rather than O(N_pedestrians)
 									neighbors.stream()
 											// We only care about the susceptible pedestrians
@@ -240,6 +247,7 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 													assignToGroup(susceptiblePed, SIRType.ID_INFECTED.ordinal());
 												}
 											});
+									if (!attributesSIRG.getRecoverBeforeSpread()) { attemptRecover(infected); }
 								}
 						);
 			} else {

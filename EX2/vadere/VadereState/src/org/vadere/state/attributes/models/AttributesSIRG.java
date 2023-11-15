@@ -12,6 +12,8 @@ public class AttributesSIRG extends Attributes {
 	private int infectionsAtStart = 0;
 	private double infectionRate = 0.01;
 	private double infectionMaxDistance = 1;
+	private double recoveryRate = 0.01;
+	private boolean recoverBeforeSpread = true;
 	private double SIRTimeResolution = 1.0;
 
 	public int getInfectionsAtStart() { return infectionsAtStart; }
@@ -22,6 +24,14 @@ public class AttributesSIRG extends Attributes {
 
 	public double getInfectionMaxDistance() {
 		return infectionMaxDistance;
+	}
+
+	public double getRecoveryRate() {
+		return recoveryRate;
+	}
+
+	public boolean getRecoverBeforeSpread() {
+		return recoverBeforeSpread;
 	}
 
 	public double getSIRTimeResolution() {
