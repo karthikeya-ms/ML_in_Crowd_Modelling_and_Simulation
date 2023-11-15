@@ -168,3 +168,4 @@ log.out
 # IntelliJ-based IDE in EX2 root folder
 EX2/.idea
 output
+settings.json
