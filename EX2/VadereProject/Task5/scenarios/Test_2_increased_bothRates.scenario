@@ -1,8 +1,7 @@
 {
-  "name" : "Scenario 1",
+  "name" : "Test_2_increased_bothRates",
   "description" : "",
   "release" : "2.4",
-  "commithash" : "No version control commit hash available!",
   "processWriters" : {
     "files" : [ {
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
@@ -16,6 +15,10 @@
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.NoDataKeyOutputFile",
       "filename" : "overlapCount.txt",
       "processors" : [ 4 ]
+    }, {
+      "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
+      "filename" : "SIR.csv",
+      "processors" : [ 5 ]
     } ],
     "processors" : [ {
       "type" : "org.vadere.simulator.projects.dataprocessing.processor.FootStepProcessor",
@@ -33,6 +36,9 @@
       "attributes" : {
         "pedestrianOverlapProcessorId" : 3
       }
+    }, {
+      "type" : "org.vadere.simulator.projects.dataprocessing.processor.FootStepGroupIDProcessor",
+      "id" : 5
     } ],
     "isTimestamped" : true,
     "isWriteMetaData" : false
@@ -59,7 +65,7 @@
         "targetPotentialModel" : "org.vadere.simulator.models.potential.fields.PotentialFieldTargetGrid",
         "pedestrianPotentialModel" : "org.vadere.simulator.models.potential.PotentialFieldPedestrianCompactSoftshell",
         "obstaclePotentialModel" : "org.vadere.simulator.models.potential.PotentialFieldObstacleCompactSoftshell",
-        "submodels" : [ ]
+        "submodels" : [ "org.vadere.simulator.models.groups.sir.SIRGroupModel" ]
       },
       "org.vadere.state.attributes.models.AttributesPotentialCompactSoftshell" : {
         "pedPotentialIntimateSpaceWidth" : 0.45,
@@ -91,10 +97,18 @@
           "width" : 0.2,
           "height" : 1.0
         }
+      },
+      "org.vadere.state.attributes.models.AttributesSIRG" : {
+        "infectionsAtStart" : 10,
+        "infectionRate" : 0.04,
+        "infectionMaxDistance" : 1.3,
+        "recoveryRate" : 0.04,
+        "recoverBeforeSpread" : false,
+        "SIRTimeResolution" : 1.0
       }
     },
     "attributesSimulation" : {
-      "finishTime" : 50.0,
+      "finishTime" : 500.0,
       "simTimeStepLength" : 0.4,
       "realTimeSimTimeRatio" : 0.1,
       "writeSimulationData" : true,
@@ -102,8 +116,8 @@
       "printFPS" : false,
       "digitsPerCoordinate" : 2,
       "useFixedSeed" : true,
-      "fixedSeed" : 1157050206266740865,
-      "simulationSeed" : 0
+      "fixedSeed" : -2547192985682197551,
+      "simulationSeed" : -2547192985682197551
     },
     "attributesPsychology" : {
       "usePsychologyLayer" : false,
@@ -131,108 +145,146 @@
         "bounds" : {
           "x" : 0.0,
           "y" : 0.0,
-          "width" : 43.4,
-          "height" : 3.0
+          "width" : 40.0,
+          "height" : 40.0
         },
         "boundingBoxWidth" : 0.5,
         "bounded" : true,
         "referenceCoordinateSystem" : null
       },
-      "obstacles" : [ ],
+      "obstacles" : [ {
+        "id" : 2,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : -1.0E-4,
+            "y" : -1.0E-4
+          }, {
+            "x" : 40.0001,
+            "y" : -1.0E-4
+          }, {
+            "x" : 40.0001,
+            "y" : 0.5001
+          }, {
+            "x" : -1.0E-4,
+            "y" : 0.5001
+          } ]
+        },
+        "visible" : true
+      }, {
+        "id" : 3,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : 40.0001,
+            "y" : -1.0E-4
+          }, {
+            "x" : 40.0001,
+            "y" : 40.0001
+          }, {
+            "x" : 39.4999,
+            "y" : 40.0001
+          }, {
+            "x" : 39.4999,
+            "y" : -1.0E-4
+          } ]
+        },
+        "visible" : true
+      }, {
+        "id" : 4,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : 40.0001,
+            "y" : 40.0001
+          }, {
+            "x" : -1.0E-4,
+            "y" : 40.0001
+          }, {
+            "x" : -1.0E-4,
+            "y" : 39.4999
+          }, {
+            "x" : 40.0001,
+            "y" : 39.4999
+          } ]
+        },
+        "visible" : true
+      }, {
+        "id" : 5,
+        "shape" : {
+          "type" : "POLYGON",
+          "points" : [ {
+            "x" : -1.0E-4,
+            "y" : 40.0001
+          }, {
+            "x" : -1.0E-4,
+            "y" : -1.0E-4
+          }, {
+            "x" : 0.5001,
+            "y" : -1.0E-4
+          }, {
+            "x" : 0.5001,
+            "y" : 40.0001
+          } ]
+        },
+        "visible" : true
+      } ],
       "measurementAreas" : [ ],
       "stairs" : [ ],
       "targets" : [ {
-        "id" : 2,
+        "id" : 1,
         "shape" : {
-          "x" : 40.9,
-          "y" : 0.4992000000000001,
-          "width" : 2.0,
-          "height" : 2.0,
+          "x" : 0.6,
+          "y" : 0.5,
+          "width" : 38.9,
+          "height" : 39.0,
           "type" : "RECTANGLE"
         },
         "visible" : true,
         "absorber" : {
-          "enabled" : true,
-          "deletionDistance" : 0.1
+          "enabled" : false,
+          "deletionDistance" : 0.0
         },
         "waiter" : {
           "enabled" : false,
           "distribution" : null
         },
-        "leavingSpeed" : 0.0,
+        "leavingSpeed" : -1.0,
         "parallelEvents" : 0
       } ],
       "targetChangers" : [ ],
       "absorbingAreas" : [ ],
       "aerosolClouds" : [ ],
       "droplets" : [ ],
-      "sources" : [ ],
-      "dynamicElements" : [ {
-        "attributes" : {
-          "id" : 1,
-          "shape" : {
-            "x" : 0.0,
-            "y" : 0.0,
-            "width" : 1.0,
-            "height" : 1.0,
-            "type" : "RECTANGLE"
-          },
-          "visible" : true,
-          "radius" : 0.2,
-          "densityDependentSpeed" : false,
-          "speedDistributionMean" : 1.33,
-          "speedDistributionStandardDeviation" : 0.26,
-          "minimumSpeed" : 1.25,
-          "maximumSpeed" : 1.42,
-          "acceleration" : 2.0,
-          "footstepHistorySize" : 4,
-          "searchRadius" : 1.0,
-          "walkingDirectionSameIfAngleLessOrEqual" : 45.0,
-          "walkingDirectionCalculation" : "BY_TARGET_CENTER"
+      "sources" : [ {
+        "id" : 2,
+        "shape" : {
+          "x" : 0.9,
+          "y" : 1.4,
+          "width" : 37.7,
+          "height" : 37.6,
+          "type" : "RECTANGLE"
         },
-        "source" : null,
-        "targetIds" : [ 2 ],
-        "nextTargetListIndex" : 0,
-        "isCurrentTargetAnAgent" : false,
-        "position" : {
-          "x" : 0.7,
-          "y" : 1.5
+        "visible" : true,
+        "targetIds" : [ 1 ],
+        "spawner" : {
+          "type" : "org.vadere.state.attributes.spawner.AttributesRegularSpawner",
+          "constraintsElementsMax" : -1,
+          "constraintsTimeStart" : 0.0,
+          "constraintsTimeEnd" : 1.0,
+          "eventPositionRandom" : true,
+          "eventPositionGridCA" : false,
+          "eventPositionFreeSpace" : false,
+          "eventElementCount" : 1000,
+          "eventElement" : null,
+          "distribution" : {
+            "type" : "org.vadere.state.attributes.distributions.AttributesConstantDistribution",
+            "updateFrequency" : 1.0
+          }
         },
-        "velocity" : {
-          "x" : 0.0,
-          "y" : 0.0
-        },
-        "freeFlowSpeed" : 1.572835195500785,
-        "followers" : [ ],
-        "idAsTarget" : -1,
-        "isChild" : false,
-        "isLikelyInjured" : false,
-        "psychologyStatus" : {
-          "mostImportantStimulus" : null,
-          "threatMemory" : {
-            "allThreats" : [ ],
-            "latestThreatUnhandled" : false
-          },
-          "selfCategory" : "TARGET_ORIENTED",
-          "groupMembership" : "OUT_GROUP",
-          "knowledgeBase" : {
-            "knowledge" : [ ],
-            "informationState" : "NO_INFORMATION"
-          },
-          "perceivedStimuli" : [ ],
-          "nextPerceivedStimuli" : [ ]
-        },
-        "healthStatus" : null,
-        "infectionStatus" : null,
-        "groupIds" : [ ],
-        "groupSizes" : [ ],
-        "agentsInGroup" : [ ],
-        "trajectory" : {
-          "footSteps" : [ ]
-        },
-        "modelPedestrianMap" : null,
-        "type" : "PEDESTRIAN"
+        "groupSizeDistribution" : [ 1.0 ]
       } ],
+      "dynamicElements" : [ ],
       "attributesPedestrian" : {
         "shape" : {
           "x" : 0.0,
@@ -244,10 +296,10 @@
         "visible" : true,
         "radius" : 0.2,
         "densityDependentSpeed" : false,
-        "speedDistributionMean" : 1.33,
+        "speedDistributionMean" : 1.34,
         "speedDistributionStandardDeviation" : 0.26,
-        "minimumSpeed" : 1.25,
-        "maximumSpeed" : 1.42,
+        "minimumSpeed" : 0.5,
+        "maximumSpeed" : 2.2,
         "acceleration" : 2.0,
         "footstepHistorySize" : 4,
         "searchRadius" : 1.0,
