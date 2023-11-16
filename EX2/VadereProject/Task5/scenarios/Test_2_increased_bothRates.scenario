@@ -100,9 +100,9 @@
       },
       "org.vadere.state.attributes.models.AttributesSIRG" : {
         "infectionsAtStart" : 10,
-        "infectionRate" : 0.04,
+        "infectionRate" : 0.2,
         "infectionMaxDistance" : 1.3,
-        "recoveryRate" : 0.04,
+        "recoveryRate" : 0.1,
         "recoverBeforeSpread" : false,
         "SIRTimeResolution" : 1.0
       }
