@@ -92,10 +92,10 @@
         }
       },
       "org.vadere.state.attributes.models.AttributesSIRG" : {
-        "infectionsAtStart" : 0,
-        "infectionRate" : 0.04,
+        "infectionsAtStart" : 10,
+        "infectionRate" : 0.02,
         "infectionMaxDistance" : 1.0,
-        "recoveryRate" : 0.001,
+        "recoveryRate" : 0.01,
         "recoverBeforeSpread" : true,
         "SIRTimeResolution" : 1.0
       }
@@ -1043,7 +1043,7 @@
           "type" : "RECTANGLE"
         },
         "visible" : true,
-        "targetIds" : [ ],
+        "targetIds" : [ 14 ],
         "spawner" : {
           "type" : "org.vadere.state.attributes.spawner.AttributesRegularSpawner",
           "constraintsElementsMax" : -1,
@@ -1052,7 +1052,7 @@
           "eventPositionRandom" : true,
           "eventPositionGridCA" : false,
           "eventPositionFreeSpace" : false,
-          "eventElementCount" : 75,
+          "eventElementCount" : 25,
           "eventElement" : null,
           "distribution" : {
             "type" : "org.vadere.state.attributes.distributions.AttributesConstantDistribution",
@@ -1070,7 +1070,7 @@
           "type" : "RECTANGLE"
         },
         "visible" : true,
-        "targetIds" : [ ],
+        "targetIds" : [ 15 ],
         "spawner" : {
           "type" : "org.vadere.state.attributes.spawner.AttributesRegularSpawner",
           "constraintsElementsMax" : -1,
@@ -1079,7 +1079,7 @@
           "eventPositionRandom" : false,
           "eventPositionGridCA" : false,
           "eventPositionFreeSpace" : true,
-          "eventElementCount" : 1,
+          "eventElementCount" : 25,
           "eventElement" : null,
           "distribution" : {
             "type" : "org.vadere.state.attributes.distributions.AttributesConstantDistribution",
@@ -1097,7 +1097,7 @@
           "type" : "RECTANGLE"
         },
         "visible" : true,
-        "targetIds" : [ ],
+        "targetIds" : [ 16 ],
         "spawner" : {
           "type" : "org.vadere.state.attributes.spawner.AttributesRegularSpawner",
           "constraintsElementsMax" : -1,
@@ -1106,7 +1106,7 @@
           "eventPositionRandom" : false,
           "eventPositionGridCA" : false,
           "eventPositionFreeSpace" : true,
-          "eventElementCount" : 1,
+          "eventElementCount" : 25,
           "eventElement" : null,
           "distribution" : {
             "type" : "org.vadere.state.attributes.distributions.AttributesConstantDistribution",
