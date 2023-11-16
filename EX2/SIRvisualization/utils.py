@@ -40,7 +40,7 @@ def create_folder_data_scatter(folder):
     :param folder:
     :return:
     """
-    file_path = os.path.join(folder, "SIRinformation.csv")
+    file_path = os.path.join(folder, "SIR.csv")
     if not os.path.exists(file_path):
         return None
     data = pd.read_csv(file_path, delimiter=" ")

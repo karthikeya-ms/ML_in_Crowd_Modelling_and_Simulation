@@ -17,7 +17,7 @@
       "processors" : [ 4 ]
     }, {
       "type" : "org.vadere.simulator.projects.dataprocessing.outputfile.EventtimePedestrianIdOutputFile",
-      "filename" : "SIRinformation.csv",
+      "filename" : "SIR.csv",
       "processors" : [ 5 ]
     } ],
     "processors" : [ {
