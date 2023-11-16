@@ -47,25 +47,25 @@ def parse_output(output: str) -> str:
 
     sys.exit(1)
 
-def parse_pedestrians(pedestrians: list[str]) -> Optional[list[tuple[float, float, list[int]]]]:
+def parse_pedestrians(pedestrian: str) -> Optional[list[tuple[float, float, list[int]]]]:
     """Checks the validity of the pedestrians inserted and casts the string to a usefull type.
     
     The return type of this cast is meant to be interpreted as a list of pedestrians. 
     In this list each pedestrian is represented by an x position, a float, a y position, a float, 
     and a list of target ids, a list of integers.
+    
+    Note that argsparse calls this function for every instance of the option called.
 
     Args:
-        pedestrians (list[str]): The list of pedeestrians for adition inputed by the user.
+        pedestrian (str): The pedestrian for adition inputed by the user.
 
     Returns:
         Optional[list[tuple[float, float, list[int]]]]: The list of pedestrians to add.
     """
-    new_pedestrians = []
-    for p in pedestrians:
-        if re.search(r"^[0-9]+(\.[0-9]+)?,[0-9]+(\.[0-9]+)?(,[0-9]+)*$", p) is None:
-            print(f'The following pedestrian was not inserted correctly: {p}. It will be skipped!')
-        else:
-            x, y, *target_ids = p.split(',')
-            new_pedestrians.append((float(x), float(y), set(map(int, target_ids))))
+    if re.search(r"^[0-9]+(\.[0-9]+)?,[0-9]+(\.[0-9]+)?(,[0-9]+)*$", pedestrian) is None:
+        print(f'The following pedestrian was not inserted correctly: {pedestrian}. It will be skipped!')
+        return None
+    else:
+        x, y, *target_ids = pedestrian.split(',')
+        return (float(x), float(y), set(map(int, target_ids)))
 
-    return new_pedestrians

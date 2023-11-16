@@ -7,7 +7,7 @@ import argparse
 
 from scenario_customizer import EXIT_KEY, HOME_KEY
 from scenario_customizer.scenario import Scenario
-from scenario_customizer.argument_parsing import parse_filename, parse_output
+from scenario_customizer.argument_parsing import parse_filename, parse_output, parse_pedestrians
 from scenario_customizer.cli_input import string_input, scenario_input, output_file_path_input
 
 
@@ -53,6 +53,7 @@ def apply_arguments(args: argparse.ArgumentParser, scenario: Scenario) -> None:
     """
     if args.pedestrians is not None:
         for p in args.pedestrians:
+            print(f"Adding pedestrian at ({p[0]},{p[1]}) with targets {p[2]}")
             scenario.add_pedestrian(p[0], p[1], p[2])
 
     scenario.save()
@@ -91,18 +92,18 @@ def main():
     )
 
     parser.add_argument(
-        '-p', '--add-pedestrian',
+        '-p',
         dest='pedestrians',
         help="Add a pedestrian as a tuple. It must come in the format: x,y(,t)* "
               "where x and y are floats in the form 0.0 and each t "
               "is an integer corresponding to the id of a target. "
               "This option can be repeated any amount of times."
         ,
-        action='append'
+        action='append', type=parse_pedestrians
     )
 
-
     args = parser.parse_args()
+    args.pedestrians = list(filter(lambda x: x is not None, args.pedestrians))
 
     scenario = args.filename
     output_file_path = args.output
@@ -150,7 +151,7 @@ def main():
                 pass
 
     except (EOFError, KeyboardInterrupt):
-        print("Your actions have been successfully performed and saved.")
+        print("\nYour actions have been successfully performed and saved.")
 
 if __name__ == "__main__":
     main()

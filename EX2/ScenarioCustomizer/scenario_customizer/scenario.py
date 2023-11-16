@@ -9,19 +9,22 @@ from typing import Optional, Any
 from random import randint
 
 
-topogrophy_objects_with_id = [
+# Private helper
+_topogrophy_objects_with_id = [
         "obstacles", "measurementAreas", "stairs", "targets", "targetChangers",
         "absorbingAreas", "aerosolClouds", "droplets", "sources", "dynamicElements"
     ]
 
+# Checker structure for scenario file
 required_property_tree = {
     "name": {},
     "scenario": {
         "topography": {
-            object_list_name: list for object_list_name in topogrophy_objects_with_id
+            object_list_name: list for object_list_name in _topogrophy_objects_with_id
         }
     }
 }
+
 
 def assert_valid_scenario_spec(prop: Any, scenario_spec: Any, scenario_tree: dict) -> Optional[tuple[str, str]]:
     """Validates the specification on a node in the validation tree (usually a leaf).
@@ -160,7 +163,7 @@ class Scenario:
             int: The current id for a new element.
         """
         max_id = 0
-        for obj_list in topogrophy_objects_with_id:
+        for obj_list in _topogrophy_objects_with_id:
             for topogrophy_object in self.topography[obj_list]:
                 if "id" in topogrophy_object and topogrophy_object["id"] > max_id:
                     max_id = topogrophy_object["id"]
@@ -228,7 +231,7 @@ class Scenario:
         pedestrian["attributes"]["id"] = self.new_id
         pedestrian["position"]["x"] = x
         pedestrian["position"]["y"] = y
-        pedestrian["targetIds"].extend(target_ids)
+        pedestrian["targetIds"].extend(list(target_ids))
 
 
         self.topography["dynamicElements"].append(pedestrian)
