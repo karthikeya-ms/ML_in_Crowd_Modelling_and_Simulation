@@ -69,9 +69,12 @@ public class PostvisualizationRenderer extends SimulationRenderer {
 
 	private HashMap<Integer, Integer> getSIRGroups(double visTime, double resolution){
 		HashMap<Integer, Integer> pedGroups = new HashMap<Integer, Integer>();
+
+		final String sirFilePath = this.model.getOutputPath() + "/SIR.csv";
+
 		try {
 			CsvReadOptions.Builder builder =
-					CsvReadOptions.builder(this.model.getOutputPath() + "/SIRinformation.csv")
+					CsvReadOptions.builder(sirFilePath)
 							.separator(' ');
 			CsvReadOptions options = builder.build();
 
@@ -85,7 +88,7 @@ public class PostvisualizationRenderer extends SimulationRenderer {
 			return pedGroups;
 		}
 		catch (Exception e){
-			System.out.println("Could not read SIRinformation.csv");
+			System.out.println("Could not read " + sirFilePath);
 			return  pedGroups;
 		}
 	}
