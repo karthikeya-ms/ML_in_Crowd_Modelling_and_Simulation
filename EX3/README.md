@@ -9,8 +9,8 @@ conda activate MLCMS_GroupI
 
 ## Creating a Notebook
 
-Create notebooks in the notebooks folder. To import modules devlopped by the group all users must place the following import at the beginning of their notebooks:
+Create notebooks in the notebooks folder. To import modules devloped by the group all users must place the following import at the beginning of their notebooks:
 
 ```python
-import group_modules
+import init_notebook
 ```
