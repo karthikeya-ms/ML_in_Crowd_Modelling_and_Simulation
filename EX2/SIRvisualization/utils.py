@@ -30,6 +30,10 @@ def file_df_to_count_df(df,
                 current_state = g
                 group_counts.loc[group_counts['simTime'] > st, 'group-s'] -= 1
                 group_counts.loc[group_counts['simTime'] > st, 'group-i'] += 1
+            elif g != current_state and g == ID_REMOVED and current_state == ID_INFECTED:
+                current_state = g
+                group_counts.loc[group_counts['simTime'] > st, 'group-i'] -= 1
+                group_counts.loc[group_counts['simTime'] > st, 'group-r'] += 1
                 break
     return group_counts
 
