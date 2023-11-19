@@ -25,5 +25,7 @@ if [ ! $(which pip | grep EX3/.venv) ]; then
     error "Pip is not from virtual environment"
 fi
 
-# Install requirements
-.venv/bin/pip install -r requirements.txt || error "Failed to install requirements"
+# Install requirements only if needed
+python3 -c "import pkg_resources; pkg_resources.require(open('requirements.txt',mode='r'))" &>/dev/null \
+  && echo "Requirements already installed" \
+ || .venv/bin/pip install -r requirements.txt || error "Failed to install requirements"
