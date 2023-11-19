@@ -230,11 +230,9 @@ public class SIRGroupModel extends AbstractGroupModel<SIRGroup> {
 				.stream()
 				// Get only infected
 				.filter(ped -> getGroup(ped).getID() == SIRType.ID_INFECTED.ordinal())
+				// Attempt to recover infected first if recoverBeforeSpread is true
+				.filter(infected -> !attributesSIRG.getRecoverBeforeSpread() || !attemptRecover(infected))
 				.forEach(infected -> {
-						if (attributesSIRG.getRecoverBeforeSpread() && attemptRecover(infected)){
-							return;
-						}
-
 						// No need to calculate dist for all other pedestrians anymore compared to original implementation. O(1) access to supplied radius
 						final Collection<Pedestrian> neighbors = linkedCellsGrid.getObjects(infected.getPosition(), attributesSIRG.getInfectionMaxDistance());
 						// O(N_neighbors) rather than O(N_pedestrians)
