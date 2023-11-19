@@ -1,5 +1,5 @@
 # Make sure we're in the directory where the file `init_venv.ps1` is located
-cd $PSScriptRoot
+Set-Location $PSScriptRoot
 
 # Make sure you have Python>=11. Use `Get-Command python` to check
 python -m venv .venv
