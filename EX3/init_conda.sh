@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-# Script to init venv. Installs
+# Script to init conda. Installs and switches to virtual environment
 
 error() {
-    echo "ERROR: $1"
+    echo -e "\e[0;31mERROR:\e[0m $1"
     exit 1
 }
+
+error "Script not functional yet..."
 
 # Check if we're in the right directory
 if [ ! -f "init_conda.sh" ]; then
@@ -13,9 +15,14 @@ if [ ! -f "init_conda.sh" ]; then
 fi
 
 # Get myenvname from `environment.yml`
-MY_ENV_NAME=$(grep "name:" environment.yml | sed 's/name: //g')
+MY_ENV_NAME="$(grep "name:" environment.yml | sed 's/name: //g')"
 
-# Create conca venv if doesn't exist
+# Check if `MY_ENV_NAME` == MLCMS_GroupI
+if [ "$MY_ENV_NAME" != "MLCMS_GroupI" ]; then
+    error "Environment name \"$MY_ENV_NAME\" has changed from MLCMS_GroupI. Error?"
+fi
+
+# Create conca env if doesn't exist
 if [ ! $(conda env list | grep "$MY_ENV_NAME") ]; then
     conda env create -f environment.yml || error "Failed to create conda environment"
 fi
