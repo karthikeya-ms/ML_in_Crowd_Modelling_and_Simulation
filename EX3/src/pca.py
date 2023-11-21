@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
+
 
 class PCAResult:
     U: np.ndarray
@@ -68,8 +68,6 @@ class PCAResult:
         return self.__str__()
 
 
-
-
 def pca(data_matrix: np.ndarray) -> PCAResult:
     """
     Converts a data matrix to PCA format, i.e. svd on centered data.
@@ -93,6 +91,7 @@ def pca(data_matrix: np.ndarray) -> PCAResult:
     u, s, vh = np.linalg.svd(centered_data, full_matrices=True)
 
     return PCAResult(u, s, vh)
+
 
 def plot_data_with_pcs(data_centered, Vt):
     """
