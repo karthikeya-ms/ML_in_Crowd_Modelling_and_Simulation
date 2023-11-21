@@ -28,4 +28,12 @@ if [ ! $(which pip | grep "$MY_ENV_NAME") ]; then
     error "Pip is not from our conda environment"
 fi
 
+# Check for unmet dependencies
+# TODO: Check if it works...
+if ! conda env export > /dev/null; then
+   # If there are unmet dependencies, update the environment
+   conda env update --file environment.yml --prune
+   echo "Updated conda environment"
+fi
+
 echo "Ready to go!"
