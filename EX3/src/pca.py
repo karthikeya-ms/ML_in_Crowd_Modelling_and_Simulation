@@ -14,6 +14,7 @@ class PCAResult:
         self.U = u
         self.S = s
         self.Vh = vh
+        # User can input anything; make sure that the dimensions are valid
         self.validate()
 
     def __iter__(self):
@@ -22,9 +23,12 @@ class PCAResult:
         yield self.Vh
 
     def validate(self):
+        # U and Vh are 2D matrices; S is the 1D vector of singular values (including multiplicities)
         assert len(self.U.shape) == 2 and len(self.S.shape) == 1 and len(self.Vh.shape) == 2
+        # The matrix product U @ diag(s) @ Vh must be defined, hence check the dimensions
         assert self.U.shape[0] == self.U.shape[1] and self.Vh.shape[0] == self.Vh.shape[1]
         assert self.S.shape[0] == self.Vh.shape[0]
+        # If we did everything correctly, the energy should be 1. Check that it is close to 1
         assert np.abs(sum(self.energy) - 1) < 1e-10
         # Check that U and Vh are orthogonal/unitary
         assert np.allclose(self.U @ self.U.T, np.eye(self.U.shape[0]))
@@ -39,6 +43,8 @@ class PCAResult:
 
 def reverse_pca(pca_result: PCAResult, r=-1) -> np.ndarray:
     """
+    TODO put this into PCA class
+
     Reconstruct data matrix from the PCA format
 
     The parameters must have valid dimensions, i.e. the product U @ diag(s) @ Vh must be defined
