@@ -1,5 +1,6 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
+import pandas as pd
 
 class PCAResult:
     U: np.ndarray
@@ -91,3 +92,22 @@ def pca(data_matrix: np.ndarray) -> PCAResult:
     u, s, vh = np.linalg.svd(centered_data, full_matrices=True)
 
     return PCAResult(u, s, vh)
+
+def plot_data_with_pcs(data_centered, Vt):
+    """
+
+    """
+    # Plot the Data
+    plt.scatter(data_centered[:, 0], data_centered[:, 1])
+
+    # Add Principal Components
+    mean_data = data_centered.mean(axis=0)
+    plt.quiver(mean_data[0], mean_data[1], Vt[0,0], Vt[0,1], scale=3, color='r')
+    plt.quiver(mean_data[0], mean_data[1], Vt[1,0], Vt[1,1], scale=3, color='g')
+    plt.title('PCA of Dataset')
+    plt.xlabel('Component 1')
+    plt.ylabel('Component 2')
+    plt.axis('equal')
+
+    # Show plot with principal components
+    plt.show()
