@@ -56,6 +56,7 @@ class PCAResult:
         sr = np.zeros((N, n))
 
         # Copy the first r singular values into Sr
+        # s is sorted by singular value magnitude, so we can just take the first r principal components
         sr[:r, :r] = np.diag(s[:r])
 
         return u @ sr @ vh
