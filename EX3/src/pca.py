@@ -34,6 +34,31 @@ class PCAResult:
         assert np.allclose(self.U @ self.U.T, np.eye(self.U.shape[0]))
         assert np.allclose(self.Vh @ self.Vh.T, np.eye(self.Vh.shape[0]))
 
+    def reverse_pca(self, r=-1) -> np.ndarray:
+        """
+        TODO put this into PCA class
+
+        Reconstruct data matrix from the PCA format
+        @param
+
+        """
+        self.validate()
+        u, s, vh = self
+
+        N, n = u.shape[0], vh.shape[1]
+
+        # if n<0, it means we want to reconstruct the original data
+        if r <= 0:
+            r = s.shape[0]
+
+        # Get the singular value matrix
+        sr = np.zeros((N, n))
+
+        # Copy the first r singular values into Sr
+        sr[:r, :r] = np.diag(s[:r])
+
+        return u @ sr @ vh
+
     def __str__(self):
         return f"PCAResult(U={self.U},s={self.S},V={self.Vh})"
 
@@ -41,31 +66,6 @@ class PCAResult:
         return self.__str__()
 
 
-def reverse_pca(pca_result: PCAResult, r=-1) -> np.ndarray:
-    """
-    TODO put this into PCA class
-
-    Reconstruct data matrix from the PCA format
-
-    The parameters must have valid dimensions, i.e. the product U @ diag(s) @ Vh must be defined
-
-    """
-    pca_result.validate()
-    u, s, vh = pca_result
-
-    N, n = u.shape[0], vh.shape[1]
-
-    # if n<0, it means we want to reconstruct the original data
-    if r <= 0:
-        r = s.shape[0]
-
-    # Get the singular value matrix
-    sr = np.zeros((N, n))
-
-    # Copy the first r singular values into Sr
-    sr[:r, :r] = np.diag(s[:r])
-
-    return u @ sr @ vh
 
 
 def pca(data_matrix: np.ndarray) -> PCAResult:
