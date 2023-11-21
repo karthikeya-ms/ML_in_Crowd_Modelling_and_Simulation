@@ -7,6 +7,8 @@ error() {
     exit 1
 }
 
+error "Don't use this script; use `init_conda.sh`"
+
 # Check if we're in the right directory
 if [ ! -f "init_venv.sh" ]; then
     error "Run from EX3 directory"
