@@ -1,11 +1,22 @@
+# This module tells Python to ignore annotations; they are only for the reader
+from __future__ import annotations
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-class PCAResult:
+class PCA:
     U: np.ndarray
     S: np.ndarray
     Vh: np.ndarray
+    _mean = None
+
+    @property
+    def mean(self) -> np.ndarray:
+        if self._mean is None:
+            # throw error
+            raise ValueError("PCA not performed")
+        return self._mean
 
     @property
     def energy(self):
@@ -15,6 +26,7 @@ class PCAResult:
         self.U = u
         self.S = s
         self.Vh = vh
+        self._mean = None
         # User can input anything; make sure that the dimensions are valid
         self.validate()
 
@@ -34,14 +46,16 @@ class PCAResult:
         # Check that U and Vh are orthogonal/unitary
         assert np.allclose(self.U @ self.U.T, np.eye(self.U.shape[0]))
         assert np.allclose(self.Vh @ self.Vh.T, np.eye(self.Vh.shape[0]))
+        if self._mean is not None:
+            assert isinstance(self._mean, np.ndarray)
+            assert len(self._mean.shape) == 1
+            assert self._mean.shape[0] == self.Vh.shape[0]
 
-    def reverse_pca(self, r=-1) -> np.ndarray:
+    def reverse_pca(self, r: int = -1, add_mean: bool = True) -> np.ndarray:
         """
-        TODO put this into PCA class
-
         Reconstruct data matrix from the PCA format
-        @param
-
+        @param  r : int    number of principal components to use. If r <= 0, use all principal components
+        @param  add_mean   if True, add the mean to the reconstructed data. Otherwise, return centered data
         """
         self.validate()
         u, s, vh = self
@@ -59,7 +73,12 @@ class PCAResult:
         # s is sorted by singular value magnitude, so we can just take the first r principal components
         sr[:r, :r] = np.diag(s[:r])
 
-        return u @ sr @ vh
+        ret_val = u @ sr @ vh
+
+        if add_mean:
+            ret_val += self._mean
+
+        return ret_val
 
     def __str__(self):
         return f"PCAResult(U={self.U},s={self.S},V={self.Vh})"
@@ -67,43 +86,47 @@ class PCAResult:
     def __repr__(self):
         return self.__str__()
 
+    @staticmethod
+    def pca(data_matrix: np.ndarray) -> PCA:
+        """
+        Converts a data matrix to PCA format, i.e. svd on centered data.
+        :param   data_matrix : array, shape (N, n). Assume n >= 2 and N >= 2
+        :return  PCAResult: U, s, Vh such that data_matrix == U @ diag(s) @ Vh,
+                 U: array (N, N), unitary
+                 S: (n,) array of singular values. diag(s) is the (N,m) matrix from literature
+                 Vh: array (n, n), unitary
+        """
+        # 2D nontrivial matrix
+        assert len(data_matrix.shape) == 2 and data_matrix.shape[1] >= 2 and data_matrix.shape[0] >= 2
 
-def pca(data_matrix: np.ndarray) -> PCAResult:
+        # Average data point, vector \overline{x} \in \mathbb{R}^n
+        average_datapoint = np.mean(data_matrix, axis=0)
+        # Center our matrix: X_{ij} - \overline{x}_j
+        centered_data = data_matrix - average_datapoint
+
+        # perform singular value decomposition on `centered_data`
+        # s is a 1D vector; diag(s) is a (N, n) matrix
+        # u and v are unitary: v @ vh == 1
+        u, s, vh = np.linalg.svd(centered_data, full_matrices=True)
+
+        to_ret = PCA(u, s, vh)
+        to_ret._mean = average_datapoint
+        return to_ret
+
+
+def plot_data_with_pcs(data_centered, Vt) -> None:
     """
-    Converts a data matrix to PCA format, i.e. svd on centered data.
-    :param   data_matrix : array, shape (N, n). Assume n >= 2 and N >= 2
-    :return  PCAResult: U, s, Vh such that data_matrix == U @ diag(s) @ Vh,
-             U: array (N, N), unitary
-             S: (n,) array of singular values. diag(s) is the (N,m) matrix from literature
-             Vh: array (n, n), unitary
-    """
-    # 2D nontrivial matrix
-    assert len(data_matrix.shape) == 2 and data_matrix.shape[1] >= 2 and data_matrix.shape[0] >= 2
+    Plot the data and the principal components
 
-    # Average data point, vector \overline{x} \in \mathbb{R}^n
-    average_datapoint = np.mean(data_matrix, axis=0)
-    # Center our matrix: X_{ij} - \overline{x}_j
-    centered_data = data_matrix - average_datapoint
-
-    # perform singular value decomposition on `centered_data`
-    # s is a 1D vector; diag(s) is a (N, n) matrix
-    # u and v are unitary: v @ vh == 1
-    u, s, vh = np.linalg.svd(centered_data, full_matrices=True)
-
-    return PCAResult(u, s, vh)
-
-
-def plot_data_with_pcs(data_centered, Vt):
-    """
-
+    :param data_centered: array, shape (N, n)
     """
     # Plot the Data
     plt.scatter(data_centered[:, 0], data_centered[:, 1])
 
     # Add Principal Components
     mean_data = data_centered.mean(axis=0)
-    plt.quiver(mean_data[0], mean_data[1], Vt[0,0], Vt[0,1], scale=3, color='r')
-    plt.quiver(mean_data[0], mean_data[1], Vt[1,0], Vt[1,1], scale=3, color='g')
+    plt.quiver(mean_data[0], mean_data[1], Vt[0, 0], Vt[0, 1], scale=3, color='r')
+    plt.quiver(mean_data[0], mean_data[1], Vt[1, 0], Vt[1, 1], scale=3, color='g')
     plt.title('PCA of Dataset')
     plt.xlabel('Component 1')
     plt.ylabel('Component 2')
