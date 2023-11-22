@@ -134,7 +134,6 @@ class PCA:
         plt.axis('off')
         plt.show()
     
-   
 
 def plot_data_with_pcs(data_centered, Vt) -> None:
     """
