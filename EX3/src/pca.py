@@ -134,3 +134,4 @@ def plot_data_with_pcs(data_centered, Vt) -> None:
 
     # Show plot with principal components
     plt.show()
+
