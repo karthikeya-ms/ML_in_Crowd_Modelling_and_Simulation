@@ -13,16 +13,6 @@ To ensure that the `environment.yaml` file is cross-platform, we start with a mi
 
 To add a package, open the file itself and look for the `dependencies` key. Insert your new dependency in here with, at least, a major version specification (the first number of the version).
 
-## Updating Dependencies
-
-Run this each time the `environment.yml` file is updated, whether by you or by someone else:
-
-```sh conda
-conda env update --file environment.yml --prune
-```
-
-The optional `--prune` flag removes dependencies that are no longer required, which helps keep the environment clean.
-
 ## Removing Environment
 
 You might want to reinstall the environment from scratch. To do this, run:
