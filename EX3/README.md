@@ -23,6 +23,15 @@ conda env update --file environment.yml --prune
 
 The optional `--prune` flag removes dependencies that are no longer required, which helps keep the environment clean.
 
+## Removing Environment
+
+You might want to reinstall the environment from scratch. To do this, run:
+
+```sh conda
+conda deactivate
+conda env remove --name MLCMS_GroupI
+````
+
 ## Creating a Notebook
 
 Create notebooks in the notebooks folder. To import modules developed by the group, all users must place the following import at the beginning of their notebooks:
