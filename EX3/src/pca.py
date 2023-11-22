@@ -52,10 +52,7 @@ class PCA:
         if self._mean is not None:
             assert isinstance(self._mean, np.ndarray)
             assert len(self._mean.shape) == 1
-            if self._transpose:
-                assert self._mean.shape[0] == self.U.shape[0]
-            else:
-                assert self._mean.shape[0] == self.Vh.shape[0]
+            assert self._mean.shape[0] == self.Vh.shape[0]
 
     def reverse_pca(self, r: int = -1, add_mean: bool = True) -> np.ndarray:
         """
@@ -128,7 +125,16 @@ class PCA:
         to_ret._mean = average_datapoint
         to_ret._transpose = treat_columns_as_datapoints
         return to_ret
-
+    
+    @staticmethod
+    def plot_reconstructed_image(pca_result, num_components, original_shape):
+        reconstructed_image = pca_result.reverse_pca(r=num_components)
+        plt.imshow(reconstructed_image.reshape(original_shape), cmap='gray')
+        plt.title(f'Reconstruction with {num_components} Components')
+        plt.axis('off')
+        plt.show()
+    
+   
 
 def plot_data_with_pcs(data_centered, Vt) -> None:
     """
@@ -150,4 +156,6 @@ def plot_data_with_pcs(data_centered, Vt) -> None:
 
     # Show plot with principal components
     plt.show()
+
+
 
