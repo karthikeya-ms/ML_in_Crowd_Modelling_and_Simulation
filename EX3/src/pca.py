@@ -52,10 +52,7 @@ class PCA:
         if self._mean is not None:
             assert isinstance(self._mean, np.ndarray)
             assert len(self._mean.shape) == 1
-            if self._transpose:
-                assert self._mean.shape[0] == self.U.shape[0]
-            else:
-                assert self._mean.shape[0] == self.Vh.shape[0]
+            assert self._mean.shape[0] == self.Vh.shape[0]
 
     def reverse_pca(self, r: int = -1, add_mean: bool = True) -> np.ndarray:
         """
