@@ -12,4 +12,5 @@ dependencies:
   - pytorch::torchvision
   - pytorch::torchaudio
   - jupyter
+  - pooch
   - scikit-image
