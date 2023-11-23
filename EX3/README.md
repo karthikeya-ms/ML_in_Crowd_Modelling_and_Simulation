@@ -40,7 +40,7 @@ Install the utility with:
 pip install nb-clean
 ````
 
-### Using bash script
+### Using Bash script
 
 Use the script `clean_notebooks.sh` to clean all notebooks in the repository. Requires `nb-clean` in path.
 
@@ -64,5 +64,5 @@ An example filepath is `C:\Users\f0r\AppData\Local\Packages\PythonSoftwareFounda
 
 ```pwsh
 $my_path="C:\Users\f0r\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\nb_clean"
-python.exe "$my_path\__main__.py" \path\to\my_notebook.ipynb
+python.exe "$my_path\__main__.py" clean \path\to\my_notebook.ipynb
 ```
