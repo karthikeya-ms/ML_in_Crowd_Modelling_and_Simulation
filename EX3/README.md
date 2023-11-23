@@ -29,3 +29,24 @@ Create notebooks in the notebooks folder. To import modules developed by the gro
 ```python
 import init_notebook
 ```
+
+## Pushing notebooks to Git
+
+Use the tool `nb-clean` to remove the output and metadata from the notebooks before pushing them to git. The aim is to make the git history easier to read and avoid unnecessary merge conflicts.
+
+### Using automated script
+
+Use the script `clean_notebooks.sh` to clean all notebooks in the repository.
+
+```sh
+./clean_notebooks.sh
+```
+### Manually
+
+```sh
+# run this to install nb-clean
+pip install nb-clean
+
+# run this before committing changes to a notebook
+nb-clean notebooks/my_notebook.ipynb
+```
