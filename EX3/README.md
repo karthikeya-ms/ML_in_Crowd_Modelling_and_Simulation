@@ -15,7 +15,7 @@ To add a package, open the file itself and look for the `dependencies` key. Inse
 
 ## Removing Environment
 
-You might want to reinstall the environment from scratch, for example to update all dependencies. To do this, run:
+You might want to reinstall the environment from scratch, discoarding your previous environment and replacing it with a fresh environment from `environment.yaml`. To do this, run:
 
 ```sh conda
 conda deactivate
