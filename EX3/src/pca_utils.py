@@ -29,7 +29,7 @@ def plot_reconstructed_image(pca_result: PCA, num_components, original_shape):
     reconstructed_image = pca_result.reverse_pca(r=num_components)
     plt.imshow(reconstructed_image.reshape(original_shape), cmap='gray')
     # print title but with floating point round after 5 digits
-    plt.title(f'{num_components} Components, '
+    plt.title(f'{num_components} / {pca_result.S.shape[0]} Components, '
               f'Energy: {100*np.sum(pca_result.energy[:num_components]):.5f}%')
     plt.axis('off')
     plt.show()
