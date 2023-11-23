@@ -10,8 +10,7 @@ def rescale_img(greyscale_img: np.ndarray, new_width: int, new_height: int) -> n
     scale_height = new_height / original_height
     scale_width = new_width / original_width
 
-    greyscale_img_rescaled = skimage_rescale_func(greyscale_img, (scale_height, scale_width), mode='reflect')
-    return greyscale_img_rescaled
+    return skimage_rescale_func(greyscale_img, (scale_height, scale_width), mode='reflect')
 
 
 def print_pca_info(pca: PCA, n: int = -1) -> None:
@@ -20,25 +19,28 @@ def print_pca_info(pca: PCA, n: int = -1) -> None:
     if n <= 0:
         n = pca.S.shape[0]
 
-    print(f'There are {pca.S.shape[0]} principal components. Ordered by magnitude:')
+    print(f'There are {pca.S.shape[0]} principal components, ordered by magnitude')
     print(f'First {n} singular values: {pca.S[:n]}')
     print(f'First {n} energies: {pca.energy[:n]}')
     print(f'Sum of largest {n} energies: {np.sum(pca.energy[:n])}')
-    print(f'Sum of all energies should be 1: {np.sum(pca.energy)}')
 
-def plot_reconstructed_image(pca_result, num_components, original_shape):
+
+def plot_reconstructed_image(pca_result: PCA, num_components, original_shape):
     reconstructed_image = pca_result.reverse_pca(r=num_components)
     plt.imshow(reconstructed_image.reshape(original_shape), cmap='gray')
-    plt.title(f'Reconstruction with {num_components} Components')
+    # print title but with floating point round after 5 digits
+    plt.title(f'{num_components} Components, '
+              f'Energy: {100*np.sum(pca_result.energy[:num_components]):.5f}%')
     plt.axis('off')
     plt.show()
 
 
-def plot_data_with_pcs(data_centered, Vt) -> None:
+def plot_data_with_pcs(data_centered: np.ndarray, Vt: np.ndarray) -> None:
     """
     Plot the data and the principal components
 
     :param data_centered: array, shape (N, n)
+    :param Vt: array, shape (n, n). Orthogonal matrix, contains principal components
     """
     # Plot the Data
     plt.scatter(data_centered[:, 0], data_centered[:, 1])

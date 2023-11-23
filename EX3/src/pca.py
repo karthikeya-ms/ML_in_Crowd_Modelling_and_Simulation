@@ -21,7 +21,7 @@ class PCA:
     # Whether the data was transposed before performing PCA
     # This flag is set by the caller of the `pca` static method
     # The flag is used in `reverse_pca` to determine whether or to transpose the reconstructed data
-    _transpose: bool = False
+    _transpose: bool
 
     @property
     def energy(self):
