@@ -9,7 +9,7 @@ ndarray = np.ndarray
 
 
 class PCA:
-    # U, S, Vh as obtained from singular value decomposition such that data_matrix == U @ diag(S) @ Vh
+    # U, S, Vh as obtained from singular value decomposition such that data_matrix == U @ diag(S) @ Vh + mean
     U: ndarray
     S: ndarray
     Vh: ndarray
@@ -21,6 +21,7 @@ class PCA:
     # Whether the data was transposed before performing PCA
     # This flag is set by the caller of the `pca` static method
     # The flag is used in `reverse_pca` to determine whether or to transpose the reconstructed data
+    # in that case, data_matrix == (U @ diag(S) @ Vh + mean).T
     _transpose: bool
 
     @property
@@ -44,7 +45,8 @@ class PCA:
 
     def validate(self) -> None:
         """
-        Paranoid checks to make sure that the dimensions are valid
+        Paranoid checks to make sure that the dimensions are valid.
+        If only the `pca` static method is used to construct/modify the `PCA` instance, this method should never fail.
         """
         num_singular_values = self.S.shape[0]
         expected_num_singular_values = min(self.U.shape[0], self.Vh.shape[0])
@@ -83,7 +85,7 @@ class PCA:
             raise ValueError(f"r={r} is too large. There are only {s.shape[0]} principal components")
 
         # Get the singular value matrix
-        sr = np.zeros((N, n))
+        sr = np.zeros((N, n), dtype=float)
 
         # Copy the first r singular values into Sr
         # s is sorted by singular value magnitude, so we can just take the first r principal components
