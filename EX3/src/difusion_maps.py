@@ -79,7 +79,7 @@ def largest_l_eigenvalues(matrix: sparse.csr_matrix, num: int = 0) -> (np.ndarra
     eigen_values = eigen_values[sorted_indices]
     eigen_vectors = eigen_vectors[:, sorted_indices]
 
-    return eigen_values[:num + 1], eigen_vectors[:, :num + 1]
+    return eigen_values, eigen_vectors
 
 
 def diffusion_map(
