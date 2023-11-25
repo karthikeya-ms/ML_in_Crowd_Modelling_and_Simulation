@@ -13,4 +13,5 @@ dependencies:
   - pytorch::torchaudio
   - jupyter
   - pooch
-  - scikit-imagegit 
+  - scikit-imagegit
+  - tqdm
