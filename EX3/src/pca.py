@@ -24,9 +24,51 @@ class PCA:
     # in that case, data_matrix == (U @ diag(S) @ Vh + mean).T
     _transpose: bool
 
+    _energy: None | ndarray = None
+
     @property
-    def energy(self):
-        return self.S ** 2 / np.sum(self.S ** 2)
+    def energy(self) -> ndarray:
+        """
+        Get the energThe energy is the percentage of how strongly a principal component contributes to the data's variance
+        :param   n: Number of principal components to use. If n < 0, return the array of all energies instead
+        :return  The energy of the first n principal components, or the energy of all principal components
+                 in array form if n < 0
+        """
+        if self._energy is None:
+            self._energy = (self.S ** 2) / np.sum(self.S ** 2)
+        return self._energy
+
+    def energy_until(self, n: int) -> ndarray:
+        """
+        Get the combined energy of the largest n principal components
+        :param   n: Number of principal components to use. Expecting 0 < n <= num_principal_components
+        :return  The energy of the first n principal components
+        """
+        if n <= 0:
+            raise ValueError(f"n={n} too small, perhaps a typo?")
+        if n > self.S.shape[0]:
+            raise ValueError(f"n={n} is too large. There are only {self.S.shape[0]} principal components")
+        return np.sum(self.energy[:n])
+
+    def min_components_until(self, energy_percent: float) -> int:
+        """
+        Get the minium number of principal components required to capture `percent` of the data's variance.
+        :param   energy_percent: Percentage, 0 < energy_percent <= 1
+        :return  The number of principal components that contribute to `percent` of the data's variance
+        """
+        if energy_percent <= 0:
+            raise ValueError(f"percentage '{energy_percent}' too small, perhaps a typo?")
+
+        # Search backwards because the energy is sorted in descending order and the largest energy is very large
+        # Find the first index where the energy is smaller. Return the index + 1
+        n = self.S.shape[0]
+        for i in range(n-1, -1, -1):
+            if self.energy_until(i) <= energy_percent:
+                return i+1
+        else:
+            # Rare case where there is only one principal component, though this should never happen anyway
+            # due to our data being at least 2x2
+            return n
 
     def __init__(self, u, s, vh: ndarray, mean: ndarray, transpose: bool = False):
         self.U = u
