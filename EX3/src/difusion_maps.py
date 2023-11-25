@@ -1,43 +1,73 @@
 import numpy as np
+import scipy as s
 from scipy.linalg import sqrtm
+from scipy.spatial import KDTree
+from scipy import sparse
+
+DECIMALS = 7
+
+def ambient_kernel(dataset: np.ndarray, diameter_percent: float = 0.05) -> sparse.csr_matrix:
+
+    max_distance = 0
+    for i in range(dataset.shape[0]):
+        for j in range(0, i+1):
+            new_distance = np.linalg.norm(dataset[i] - dataset[j])
+            if new_distance > max_distance:
+                max_distance = new_distance
+
+    epsilon = diameter_percent * max_distance
+
+    kd_tree = KDTree(dataset)
+    sparse_distance_matrix = sparse.csr_matrix(kd_tree.sparse_distance_matrix(kd_tree, epsilon))
+
+    sparse_distance_matrix.data = np.exp(-np.power(sparse_distance_matrix.data, 2) / epsilon)
+    return sparse_distance_matrix
 
 
-def ambient_kernel(dataset: np.ndarray, diameter_percent: float = 0.05) -> np.ndarray:
-
-    n_points = dataset.shape[0]
-    distance_matrix = np.zeros((n_points, n_points), dtype=float)
-
-    for i, point_i in np.ndenumerate(dataset):
-        for j, point_j in np.ndenumerate(dataset):
-            distance_matrix[i, j] = np.linalg.norm(point_i - point_j)
-
-    epsilon = diameter_percent * np.matrix(distance_matrix).max()
-
-    return np.exp(-np.power(distance_matrix, 2)/epsilon)
-
-
-def normalize_kernel(ambient_kernel_: np.ndarray) -> (np.ndarray, np.ndarray):
+def normalize_kernel(ambient_kernel_: sparse.csr_matrix) -> (np.ndarray, np.ndarray):
     """
     Return normalized kernel T and the diagonal matrix & Q^{-1/2}
     """
 
-    def sum_rows_diagonal(matrix: np.ndarray) -> np.ndarray:
-        return np.diag(np.sum(matrix, axis=1))
+    def sum_rows_diagonal(matrix: sparse.csr_array) -> sparse.csr_array:
+        return sparse.csr_matrix(np.diag(
+            np.array(matrix.sum(axis=1)).flatten()
+        ))
 
-    def diagonal_inverse_sandwich(diagonal: np.ndarray, kernel: np.ndarray, operator) -> np.ndarray:
-        invert_diagonal = operator(diagonal)
-        return invert_diagonal @ kernel @ invert_diagonal
+    def kernel_sandwich(
+        diagonal: sparse.csr_array,
+        kernel: sparse.csr_array
+    ) -> (
+        sparse.csr_array, sparse.csr_matrix
+    ):
+        return diagonal @ kernel @ diagonal
 
-    first_diagonal = sum_rows_diagonal(ambient_kernel_)
-    kernel_matrix = diagonal_inverse_sandwich(first_diagonal, ambient_kernel_, np.invert)
-    second_diagonal = sum_rows_diagonal(kernel_matrix)
-    return (diagonal_inverse_sandwich(second_diagonal, kernel_matrix, lambda m: sqrtm(np.invert(m))),
-            sqrtm(np.invert(second_diagonal)))
+    first_diagonal = s.sparse.linalg.inv(sum_rows_diagonal(ambient_kernel_))
+    kernel_matrix = kernel_sandwich(first_diagonal, ambient_kernel_)
+    second_diagonal = (s.sparse.linalg.inv(sum_rows_diagonal(kernel_matrix))).power(0.5)
+    return (
+        kernel_sandwich(second_diagonal, kernel_matrix),
+        second_diagonal
+    )
+    # return (
+    #     np.around(kernel_sandwich(second_diagonal, kernel_matrix), DECIMALS),
+    #     np.around(second_diagonal, DECIMALS)
+    # )
 
 
-def largest_l_eigenvalues(matrix: np.ndarray, num: int = -1) -> (np.ndarray, np.ndarray):
+def largest_l_eigenvalues(matrix: sparse.csr_matrix, num: int = 0) -> (np.ndarray, np.ndarray):
 
-    eigen_values, eigen_vectors = np.linalg.eig(matrix)
+    if num > matrix.shape[0] - 2:
+        raise ValueError(
+            f"num={num} is too large. Can only claculate up to and including N-2 eigenvalues"
+        )
+
+    # scipy's eigs cannot calculate more than N-2 eigenvalues.
+    # This method was chosen because its efficient and the last eignevalues will allways be irrelevant
+    eigen_values, eigen_vectors = sparse.linalg.eigs(
+        matrix,
+        k=num if num > 0 else matrix.shape[0]-2, which='LM'
+    )
 
     # This assert should pass because the kernel matrix is real and symmetric
     # which means real eigenvalues and orthogonal eigenvectors
@@ -49,15 +79,16 @@ def largest_l_eigenvalues(matrix: np.ndarray, num: int = -1) -> (np.ndarray, np.
     eigen_values = eigen_values[sorted_indices]
     eigen_vectors = eigen_vectors[:, sorted_indices]
 
-    if num <= 0:
-        return eigen_values, eigen_vectors
-    elif num >= eigen_values.shape[0]:
-        raise ValueError(f"num={num} is too large. There are only {eigen_values.shape[0]} eigenvalues")
-
     return eigen_values[:num + 1], eigen_vectors[:, :num + 1]
 
 
-def diffusion_map(dataset: np.ndarray, diameter_percent: float = 0.05, num_eigenvalues: int = -1) -> (np.ndarray, np.ndarray):
+def diffusion_map(
+    dataset: np.ndarray,
+    diameter_percent: float = 0.05,
+    num_eigenvalues: int = -1
+    ) -> (
+        sparse.csr_matrix, sparse.csr_matrix
+    ):
     """
     Return lambda^2 and phi_l from the paper
     """
