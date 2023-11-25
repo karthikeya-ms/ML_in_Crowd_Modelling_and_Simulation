@@ -17,7 +17,7 @@ if [ ! "$(which nb-clean)" ]; then
 fi
 
 # Check if we're in the right directory
-if [ ! -f init_conda.sh ]; then
+if [ ! -f clean-notebooks.sh ]; then
     error "Run from EX3 directory"
 fi
 
