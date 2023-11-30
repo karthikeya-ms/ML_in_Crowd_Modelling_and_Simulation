@@ -4,7 +4,6 @@ from scipy.linalg import sqrtm
 from scipy.spatial import KDTree
 from scipy import sparse
 
-DECIMALS = 7
 
 def ambient_kernel(dataset: np.ndarray, diameter_percent: float = 0.05) -> sparse.csr_matrix:
 
@@ -49,10 +48,6 @@ def normalize_kernel(ambient_kernel_: sparse.csr_matrix) -> (np.ndarray, np.ndar
         kernel_sandwich(second_diagonal, kernel_matrix),
         second_diagonal
     )
-    # return (
-    #     np.around(kernel_sandwich(second_diagonal, kernel_matrix), DECIMALS),
-    #     np.around(second_diagonal, DECIMALS)
-    # )
 
 
 def largest_l_eigenvalues(matrix: sparse.csr_matrix, num: int = 0) -> (np.ndarray, np.ndarray):
@@ -100,10 +95,68 @@ def diffusion_map(
     # 9. Compute the eigenvalues of T hat^{1/epislon}
     # TODO: They are squared. Why?
     # These are the lambdas in the paper
-    eigenvalues = np.power(eigenvalues_T, 1/diameter_percent)
+    eigenvalues = np.power(eigenvalues_T, 1/diameter_percent).real
     # These are the phi_l in the paper
-    eigenvectors = Q_inverse_sqrt @ eigenvectors_T
+    eigenvectors = ((Q_inverse_sqrt @ eigenvectors_T).real)
 
     # Later, we may remove the first eigenvector
     # because it's constant if the data is connected for the supplied `diameter_percent`
     return eigenvalues, eigenvectors
+
+class DiffusionMap:
+
+    def __init__(
+        self,
+        data: np.ndarray,
+        diameter_percent: float =0.05,
+        num_eigenvalues: int =-1
+        ) -> None:
+        self.eigen_values, self.eigen_vectors = \
+            diffusion_map(data, diameter_percent=diameter_percent, num_eigenvalues=num_eigenvalues)
+        
+        
+        self.length = num_eigenvalues
+        self.normalize_eigen_vectors()
+        
+        
+        self.points = np.array([self.eigen_vectors[:,i] * self.eigen_values[i] for i in range(num_eigenvalues)]).T
+        
+
+    def __len__(self) -> int:
+        return self.length
+
+    def normalize_eigen_vectors(self) -> None:
+        for i in range(len(self)):
+            for element in self.eigen_vectors[:,i]:
+                if element == 0:
+                    continue
+
+                elif element < 0:
+                    self.eigen_vectors[:,i] = self.eigen_vectors[:,i] * -1
+
+                break
+        
+
+    def eigen_value(self, i) -> float:
+        return self.eigen_values[i]
+
+    def eigen_vector(self, i) -> np.ndarray:
+        return self.eigen_vectors[:,i]
+
+    def eigen_pair(self, i) -> (float, np.ndarray):
+        return self.eigen_value(i), self.eigen_vector(i)
+
+    def point(self, i) -> float:
+        return np.multiply(self.eigen_vectors[i])
+
+    def __iter__(self):
+        return zip(self.eigen_values, self.eigen_vectors).__iter__()
+
+    def __call__(self, x: np.array) -> np.array:
+        assert x.shape == self.eigen_vectors[0].shape
+
+        x_diff_space = np.zeros(len(self),)
+        for i, (eigen_value, eigen_vector) in enumerate(self):
+            x_diff_space[i] = eigen_value * eigen_vector
+
+        return x_diff_space
