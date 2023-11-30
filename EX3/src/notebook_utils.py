@@ -83,8 +83,8 @@ def plot_pedestrian_figure_variant2(data_matrix: np.ndarray,
 
 def reconstruct_and_plot_trajectory(pca_result: PCA, num_components: int) -> None:
     reconstructed_data = pca_result.reverse_pca(r=num_components)
-    comment = (f'{num_components} / {pca_result.S.shape[0]} components,'
-               f'{pca_result.energy_until(num_components)}% energy')
+    comment = (f'{num_components} / {pca_result.S.shape[0]} components, '
+               f'{100*pca_result.energy_until(num_components):.5f}% energy')
     plot_pedestrian_figure_variant1(reconstructed_data, comment)
     plot_pedestrian_figure_variant1(reconstructed_data, comment + ', including original trajectory', pca_result.reverse_pca())
     plot_pedestrian_figure_variant2(reconstructed_data, comment)
@@ -205,5 +205,3 @@ def check_two_pedestrian_arrays(x1: np.ndarray, y1: np.ndarray, x2: np.ndarray, 
     assert x1.shape[0] == y1.shape[0] and x1.shape == y1.shape
     assert x2.shape[0] == y2.shape[0] and x2.shape == y2.shape
     assert x1.shape == x2.shape
-
-
