@@ -15,3 +15,4 @@ dependencies:
   - pooch
   - scikit-image
   - tqdm
+  - seaborn

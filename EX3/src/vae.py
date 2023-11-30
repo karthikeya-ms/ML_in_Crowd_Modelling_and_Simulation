@@ -2,12 +2,17 @@ import torch
 from dataclasses import dataclass
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
+import seaborn as sns
+
 from loss import kld
 import math
 from tqdm import tqdm
 
 @dataclass(kw_only=True)
 class VAEConfig:
+    """
+    Holds the information needed to train a VAE. Includes hyperparameters and visualization constants.
+    """
     input_dim: int | None
     latent_dim: int
     encoder_layers: list[int]
@@ -15,12 +20,20 @@ class VAEConfig:
     learning_rate: float
     batch_size: int
     epochs: int
-    visualization_interval: int | None
+    visualization_interval: int | list[int] | None
 
 
 class Encoder(torch.nn.Module):
 
     def __init__(self,*, input_dim=28 * 28, latent_dim, hidden_layer_sizes=[256,256]):
+        """
+        Initializes an instance of Encoder used in VAE. 
+        the encoder predicts the distribution of the latent vectors given the input vectors
+
+        :param input_dim: the length of each input.
+        :param latent_dim: number of latent dimentions for the autoencoder.
+        :param hidden_layer_sizes: a list of sizes for each hidden layer of the encoder. 
+        """
         super(Encoder, self).__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim
@@ -55,6 +68,14 @@ class Encoder(torch.nn.Module):
 class Decoder(torch.nn.Module):
 
     def __init__(self,*, latent_dim, output_dim=28 * 28, hidden_layer_sizes=[256,256]):
+        """
+        Initializes an instance of Decoder used in VAE. 
+        the decoder predicts the distribution of the VAE input given the latent vectors
+
+        :param latent_dim: number of latent dimentions for the autoencoder.
+        :param output_dim: the length of each output.
+        :param hidden_layer_sizes: a list of sizes for each hidden layer of the decoder. 
+        """
         super(Decoder, self).__init__()
         self.latent_dim = latent_dim
         self.output_dim = output_dim
@@ -88,6 +109,14 @@ class Decoder(torch.nn.Module):
 class VAE(torch.nn.Module):
 
     def __init__(self,*, input_dim=28 * 28, latent_dim, encoder_layer_sizes=[256,256], decoder_layer_sizes=[256,256]):
+        """
+        Initializes an instance of VAE. a variational autoencoder.
+
+        :param input_dim: the length of each input sample.
+        :param latent_dim: number of latent dimentions for the autoencoder.
+        :param encoder_layer_sizes: a list of sizes for each hidden layer of the encoder. 
+        :param encoder_layer_sizes: a list of sizes for each hidden layer of the decoder. 
+        """
         super(VAE, self).__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim
@@ -104,6 +133,13 @@ class VAE(torch.nn.Module):
 
 class VAETrainer:
     def __init__(self, config: VAEConfig, train_set, test_set):
+        """
+        Initializes an instance of VAETrainer. A self-contained class for training and testing a VAE.
+
+        :param config: the configuration of the desired model.
+        :param train_set: TensorDataset of the training set.
+        :param test_set: TensorDataset of the test set.
+        """
         self.config = config
         self.VAE = VAE(input_dim=config.input_dim or None, latent_dim=config.latent_dim,
                         encoder_layer_sizes=config.encoder_layers, decoder_layer_sizes=config.decoder_layers)
@@ -118,7 +154,7 @@ class VAETrainer:
         self.visualization_interval = self.config.visualization_interval
     
     def train(self):
-        """call after initialization to train the VAE model"""
+        """call after initialization to train the VAE model. Trains the model."""
         epoch_train_losses = []
         epoch_test_losses = []
         for epoch in range(self.config.epochs):
@@ -166,9 +202,23 @@ class VAETrainer:
             test_loss = self.get_test_loss(z_means, z_log_vars)
             epoch_test_losses.append(test_loss)
 
-            if self.visualization_interval is not None and (epoch + 1) % self.visualization_interval == 0:
-                self.reconstruct_15_images()
-                self.generate_15_images()
+            if self.visualization_interval is not None:
+                if isinstance(self.visualization_interval, list):
+                    if (epoch + 1) in self.visualization_interval:
+                        self.reconstruct_15_images(epoch)
+                        self.generate_15_images(epoch)
+                        if self.config.latent_dim == 2:
+                            self.plot_latent_representation(epoch)
+
+                elif (epoch + 1) % self.visualization_interval == 0:
+                    self.reconstruct_15_images(epoch)
+                    self.generate_15_images(epoch)
+
+        if self.config.latent_dim == 2:
+            self.plot_latent_representation()
+        self.reconstruct_15_images()
+        self.generate_15_images()
+
 
         epoch_list = list(range(1, self.config.epochs + 1))
         plt.title("Training ELBO Loss Over Epochs")
@@ -183,14 +233,19 @@ class VAETrainer:
         plt.plot(epoch_list, epoch_test_losses)
         plt.show()
 
-    def reconstruct_15_images(self):
+    def reconstruct_15_images(self, epoch = None):
         """
         Used only in cases where the dataset consists of images.
         plots 15 random samples from the test set and their reconstructions
+
+        :param epoch: the current epoch number of training. None assumes this plot is done after training.
         """
         with torch.no_grad():
             fig, axes = plt.subplots(nrows=5, ncols=6, figsize=(10, 5))
-            fig.suptitle("15 Reconstructed Samples")
+            if epoch is not None:
+                fig.suptitle(f"15 Reconstructed Samples (Epoch {epoch + 1})")
+            else:
+                fig.suptitle(f"15 Reconstructed Samples")
             test_loader =  DataLoader(self.test_set, batch_size=1, shuffle=True)
             sample_iter = iter(test_loader)
             for i in range(5):
@@ -214,15 +269,20 @@ class VAETrainer:
                         axes[i][j + 1].title.set_text("Reconstruction")
             
             plt.show()
-    
-    def generate_15_images(self):
+
+    def generate_15_images(self, epoch = None):
         """
         Used only in cases where the dataset consists of images.
         plots 15 randomly generated images.
+
+        :param epoch: the current epoch number of training. None assumes this plot is done after training.
         """
         with torch.no_grad():
             fig, axes = plt.subplots(nrows=3, ncols=5, figsize=(10, 5))
-            fig.suptitle("15 Generated Samples")
+            if epoch is not None:
+                fig.suptitle(f"15 Generated Samples (Epoch {epoch + 1})")
+            else:
+                fig.suptitle(f"15 Generated Samples")
             for i in range(3):
                 for j in range(5):
                     z = torch.randn((1, self.config.latent_dim))
@@ -233,9 +293,38 @@ class VAETrainer:
                     axes[i][j].imshow(x_pred_2d)
                     axes[i][j].axis('off')
             plt.show()
+    
+    def plot_latent_representation(self, epoch = None):
+        """
+        Used only in cases where the the latent dimension size is 2.
+        Plots the samples in the latent space.
+
+        :param epoch: the current epoch number of training. None assumes this plot is done after training.
+        """
+        test_loader = DataLoader(self.test_set, batch_size=len(self.test_set), shuffle=False)
+        with torch.no_grad():
+            sample_iter = iter(test_loader)
+            test_samples = next(sample_iter)
+            x = test_samples[0].to(self.device)
+            y = test_samples[1].to(self.device)
+            _, _, x_encoded = self.VAE.encoder(x) 
+            x_encoded_t = torch.t(x_encoded)
+            
+            if epoch is not None:
+                plt.title(f"Latent Representation Plot (Epoch {epoch + 1})")
+            else:
+                plt.title("Latent Representation Plot")
+            plt.xlabel("Latent Dimension 1")
+            plt.ylabel("Latent Dimension 2")
+            sns.scatterplot(x=x_encoded_t[0], y=x_encoded_t[1], palette="hls", hue=y)
+            plt.show()
 
     def predict_test(self):
-        """Reconstructs the test set and returns the reconstructions."""
+        """
+        Reconstructs the test set and returns the reconstructions.
+
+        :return the reconstructions of the test set samples
+        """
         test_loader = DataLoader(self.test_set, batch_size=len(self.test_set), shuffle=False)
         with torch.no_grad():
             sample_iter = iter(test_loader)
@@ -245,6 +334,13 @@ class VAETrainer:
             return x_pred
         
     def get_test_loss(self, z_means, z_log_vars):
+        """
+        Gets the test set loss if the VAE.
+
+        :param z_means: the predicted means of the posterior.
+        :param z_log_vars: the predicted log variance of the posterior.
+        :return the ELBO loss of the test set
+        """
         test_samples = self.test_set.tensors[0]
         test_reconstructions = self.predict_test()
         loss_mse = self.mse_loss(test_reconstructions, test_samples).item()
@@ -255,10 +351,14 @@ class VAETrainer:
 
 
     def get_n_generated_samples(self, n):
-        """Generates n random samples."""
+        """
+        Generate n random samples.
+
+        :param n: Number samples to generate.
+        :return a tensor containing the generated samples.
+        """
         with torch.no_grad():
             z = torch.randn((n, self.config.latent_dim))
             x_pred = self.VAE.decoder(z)
 
             return x_pred
-
