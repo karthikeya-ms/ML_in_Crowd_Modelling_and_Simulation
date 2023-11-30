@@ -76,6 +76,16 @@ def largest_l_eigenvalues(matrix: sparse.csr_matrix, num: int = 0) -> (np.ndarra
 
     return eigen_values, eigen_vectors
 
+def normalize_eigen_vectors(eigen_vectors) -> None:
+    for i in range(len(eigen_vectors[0])):
+        for element in eigen_vectors[:,i]:
+            if element == 0:
+                continue
+
+            elif element < 0:
+                eigen_vectors[:,i] = eigen_vectors[:,i] * -1
+
+            break
 
 def diffusion_map(
     dataset: np.ndarray,
@@ -99,64 +109,8 @@ def diffusion_map(
     # These are the phi_l in the paper
     eigenvectors = ((Q_inverse_sqrt @ eigenvectors_T).real)
 
+    normalize_eigen_vectors(eigenvectors)
+
     # Later, we may remove the first eigenvector
     # because it's constant if the data is connected for the supplied `diameter_percent`
     return eigenvalues, eigenvectors
-
-class DiffusionMap:
-
-    def __init__(
-        self,
-        data: np.ndarray,
-        diameter_percent: float =0.05,
-        num_eigenvalues: int =-1
-        ) -> None:
-        self.eigen_values, self.eigen_vectors = \
-            diffusion_map(data, diameter_percent=diameter_percent, num_eigenvalues=num_eigenvalues)
-        
-        
-        self.length = num_eigenvalues
-        self.normalize_eigen_vectors()
-        
-        
-        self.points = np.array([self.eigen_vectors[:,i] * self.eigen_values[i] for i in range(num_eigenvalues)]).T
-        
-
-    def __len__(self) -> int:
-        return self.length
-
-    def normalize_eigen_vectors(self) -> None:
-        for i in range(len(self)):
-            for element in self.eigen_vectors[:,i]:
-                if element == 0:
-                    continue
-
-                elif element < 0:
-                    self.eigen_vectors[:,i] = self.eigen_vectors[:,i] * -1
-
-                break
-        
-
-    def eigen_value(self, i) -> float:
-        return self.eigen_values[i]
-
-    def eigen_vector(self, i) -> np.ndarray:
-        return self.eigen_vectors[:,i]
-
-    def eigen_pair(self, i) -> (float, np.ndarray):
-        return self.eigen_value(i), self.eigen_vector(i)
-
-    def point(self, i) -> float:
-        return np.multiply(self.eigen_vectors[i])
-
-    def __iter__(self):
-        return zip(self.eigen_values, self.eigen_vectors).__iter__()
-
-    def __call__(self, x: np.array) -> np.array:
-        assert x.shape == self.eigen_vectors[0].shape
-
-        x_diff_space = np.zeros(len(self),)
-        for i, (eigen_value, eigen_vector) in enumerate(self):
-            x_diff_space[i] = eigen_value * eigen_vector
-
-        return x_diff_space
