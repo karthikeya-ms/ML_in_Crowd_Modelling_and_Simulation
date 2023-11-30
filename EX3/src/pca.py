@@ -107,12 +107,12 @@ class PCA:
         # Check that the mean has the same dimension as a data point
         assert self.mean.shape[0] == self.Vh.shape[0]
 
-    def reverse_pca(self, r: int = -1, add_mean: bool = True) -> ndarray:
+    def reverse_pca(self, r: int = -1, debug_add_mean: bool = True) -> ndarray:
         """
         Reconstruct data matrix from the PCA format
-        @param  r : int    number of principal components to use. If r <= 0, use all principal components
-        @param  add_mean   A debug flag. If True, add the mean back to the reconstructed data.
-                           Otherwise, return centered data
+        @param  r : int          number of principal components to use. If r <= 0, use all principal components
+        @param  debug_add_mean   A debug flag! If True, add the mean back to the reconstructed data.
+                                 Otherwise, return centered data
         """
         self.validate()
 
@@ -120,7 +120,7 @@ class PCA:
 
         N, n = u.shape[0], vh.shape[1]
 
-        # if n<0, it means we want to reconstruct the original data
+        # if n <= 0, it means we want to reconstruct the original data
         if r <= 0:
             r = s.shape[0]
         elif r > s.shape[0]:
@@ -131,11 +131,12 @@ class PCA:
 
         # Copy the first r singular values into Sr
         # s is sorted by singular value magnitude, so we can just take the first r principal components
+        # The rest are zero and won't contribute to the reconstructed data
         sr[:r, :r] = np.diag(s[:r])
 
         ret_val = u @ sr @ vh
 
-        if add_mean:
+        if debug_add_mean:
             ret_val += mean
 
         if self._transpose:
@@ -179,7 +180,7 @@ class PCA:
         # perform singular value decomposition on `centered_data`
         # s is a 1D vector; diag(s) is a (N, n) matrix
         # u and v are unitary: v @ vh == 1
+        # `full_matrices=True` because we don't care about compression, as this is purely an academic project
         u, s, vh = np.linalg.svd(centered_data, full_matrices=True)
 
-        to_ret = PCA(u, s, vh, average_datapoint, treat_columns_as_datapoints)
-        return to_ret
+        return PCA(u, s, vh, average_datapoint, treat_columns_as_datapoints)
