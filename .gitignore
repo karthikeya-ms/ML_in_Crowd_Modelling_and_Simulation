@@ -157,4 +157,15 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+.idea/
+
+**/scenarios/my_*.json
+
+log.out
+
+
+
+# IntelliJ-based IDE in EX2 root folder
+EX2/.idea
+output
+settings.json
