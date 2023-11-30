@@ -21,6 +21,7 @@ class VAEConfig:
     batch_size: int
     epochs: int
     visualization_interval: int | list[int] | None
+    output_linear: bool 
 
 
 class Encoder(torch.nn.Module):
@@ -67,7 +68,7 @@ class Encoder(torch.nn.Module):
 
 class Decoder(torch.nn.Module):
 
-    def __init__(self,*, latent_dim, output_dim=28 * 28, hidden_layer_sizes=[256,256]):
+    def __init__(self,*, latent_dim, output_dim=28 * 28, hidden_layer_sizes=[256,256], output_linear: bool = False):
         """
         Initializes an instance of Decoder used in VAE. 
         the decoder predicts the distribution of the VAE input given the latent vectors
@@ -75,10 +76,12 @@ class Decoder(torch.nn.Module):
         :param latent_dim: number of latent dimentions for the autoencoder.
         :param output_dim: the length of each output.
         :param hidden_layer_sizes: a list of sizes for each hidden layer of the decoder. 
+        :param output_linear: no activation for output layer. 
         """
         super(Decoder, self).__init__()
         self.latent_dim = latent_dim
         self.output_dim = output_dim
+        self.output_linear = output_linear
 
         self.hidden_layers = []
         prev_input = self.latent_dim
@@ -102,13 +105,16 @@ class Decoder(torch.nn.Module):
         x_stds = torch.exp(0.5 * self.log_var)
         random_gaussian = torch.randn_like(x_means)
 
-        x_pred = self.sigmoid(x_means + random_gaussian * x_stds)
+        x_pred = x_means + random_gaussian * x_stds
+        if not self.output_linear:
+            x_pred = self.sigmoid(x_pred)
+
         return x_pred
     
 
 class VAE(torch.nn.Module):
 
-    def __init__(self,*, input_dim=28 * 28, latent_dim, encoder_layer_sizes=[256,256], decoder_layer_sizes=[256,256]):
+    def __init__(self,*, input_dim=28 * 28, latent_dim, encoder_layer_sizes=[256,256], decoder_layer_sizes=[256,256], output_linear: bool = False):
         """
         Initializes an instance of VAE. a variational autoencoder.
 
@@ -122,7 +128,7 @@ class VAE(torch.nn.Module):
         self.latent_dim = latent_dim
 
         self.encoder = Encoder(input_dim=self.input_dim, latent_dim=self.latent_dim, hidden_layer_sizes=encoder_layer_sizes)
-        self.decoder = Decoder(latent_dim=self.latent_dim, output_dim=self.input_dim, hidden_layer_sizes=decoder_layer_sizes)
+        self.decoder = Decoder(latent_dim=self.latent_dim, output_dim=self.input_dim, hidden_layer_sizes=decoder_layer_sizes, output_linear=output_linear)
 
     def forward(self, x):
         z, z_means, z_log_vars  = self.encoder(x)
@@ -142,7 +148,8 @@ class VAETrainer:
         """
         self.config = config
         self.VAE = VAE(input_dim=config.input_dim or None, latent_dim=config.latent_dim,
-                        encoder_layer_sizes=config.encoder_layers, decoder_layer_sizes=config.decoder_layers)
+                        encoder_layer_sizes=config.encoder_layers, decoder_layer_sizes=config.decoder_layers,
+                        output_linear=self.config.output_linear)
         
         self.optim = torch.optim.Adam(self.VAE.parameters(), lr=config.learning_rate)
 
@@ -168,7 +175,7 @@ class VAETrainer:
             for i, batch in enumerate(self.train_loader):
                 
                 self.optim.zero_grad()
-                x = batch[0].to(self.device)
+                x = batch[0].to(self.device).to(torch.float32)
                 z_means, z_log_vars, x_pred = self.VAE(x) 
                 
                 loss_mse = self.mse_loss(x_pred, x)
@@ -177,7 +184,7 @@ class VAETrainer:
                 loss_kld = self.kld_loss(z_means, z_log_vars)
                 kld_loss_total += loss_kld.item()
 
-                loss = loss_mse + loss_kld
+                loss = loss_mse +  loss_kld
                 
                 loss.backward()
                 self.optim.step()
@@ -214,10 +221,11 @@ class VAETrainer:
                     self.reconstruct_15_images(epoch)
                     self.generate_15_images(epoch)
 
-        if self.config.latent_dim == 2:
-            self.plot_latent_representation()
-        self.reconstruct_15_images()
-        self.generate_15_images()
+        if self.visualization_interval is not None:
+            if self.config.latent_dim == 2:
+                self.plot_latent_representation()
+            self.reconstruct_15_images()
+            self.generate_15_images()
 
 
         epoch_list = list(range(1, self.config.epochs + 1))
@@ -252,7 +260,7 @@ class VAETrainer:
                 for j in range(0, 6, 2):
                     index = i * 6 + j
                     sample = next(sample_iter)
-                    x = sample[0].to(self.device)
+                    x = sample[0].to(self.device).to(torch.float32)
                     _, _, x_pred = self.VAE(x) 
                     dim = int(math.sqrt(self.config.input_dim))
                     x_2d = (x.view(-1, dim, dim) * 255).squeeze()
@@ -285,7 +293,7 @@ class VAETrainer:
                 fig.suptitle(f"15 Generated Samples")
             for i in range(3):
                 for j in range(5):
-                    z = torch.randn((1, self.config.latent_dim))
+                    z = torch.randn((1, self.config.latent_dim)).to(torch.float32)
                     x_pred = self.VAE.decoder(z)
                     dim = int(math.sqrt(self.config.input_dim))
                     x_pred_2d = (x_pred.view(-1, dim, dim) * 255).squeeze()
@@ -305,8 +313,8 @@ class VAETrainer:
         with torch.no_grad():
             sample_iter = iter(test_loader)
             test_samples = next(sample_iter)
-            x = test_samples[0].to(self.device)
-            y = test_samples[1].to(self.device)
+            x = test_samples[0].to(self.device).to(torch.float32)
+            y = test_samples[1].to(self.device).to(torch.float32)
             _, _, x_encoded = self.VAE.encoder(x) 
             x_encoded_t = torch.t(x_encoded)
             
@@ -329,7 +337,7 @@ class VAETrainer:
         with torch.no_grad():
             sample_iter = iter(test_loader)
             test_samples = next(sample_iter)
-            x = test_samples[0].to(self.device)
+            x = test_samples[0].to(self.device).to(torch.float32)
             _, _, x_pred = self.VAE(x) 
             return x_pred
         
