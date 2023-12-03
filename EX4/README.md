@@ -66,3 +66,4 @@ An example filepath is `C:\Users\f0r\AppData\Local\Packages\PythonSoftwareFounda
 $my_path="C:\Users\f0r\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\nb_clean"
 python.exe "$my_path\__main__.py" clean \path\to\my_notebook.ipynb
 ```
+Feel free to modify the `clean_notebooks.ps1` script to your needs and use that instead.
