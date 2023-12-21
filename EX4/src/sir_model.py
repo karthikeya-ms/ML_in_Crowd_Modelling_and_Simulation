@@ -1,7 +1,7 @@
 
 def mu(b, I, mu0, mu1):
     """Recovery rate.
-    
+
     """
     # recovery rate, depends on mu0, mu1, b
     mu = mu0 + (mu1 - mu0) * (b/(I+b))
@@ -23,7 +23,7 @@ def h(I, mu0, mu1, beta, A, d, nu, b):
     c3 = d*(beta-nu)
     res = c0 + c1 * I + c2 * I**2 + c3 * I**3
     return res
-    
+
 
 def model(t, y, mu0, mu1, beta, A, d, nu, b):
     """
@@ -48,9 +48,9 @@ def model(t, y, mu0, mu1, beta, A, d, nu, b):
     """
     S,I,R = y[:]
     m = mu(b, I, mu0, mu1)
-    
-    dSdt = -S # add the correct model here
-    dIdt = 0
-    dRdt = 0
-    
+
+    dSdt = A - d*S - ((beta*S*I)/(S+I+R))
+    dIdt = -(d+nu)*I - m*I + ((beta*S*I)/(S+I+R))
+    dRdt = m*I - d*R
+
     return [dSdt, dIdt, dRdt]
