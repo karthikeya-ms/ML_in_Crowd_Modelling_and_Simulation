@@ -4,12 +4,30 @@ import numpy as np
 
 
 def logistic_step(x: float, r: float) -> float:
+    """
+    Performs a step of the logistic map.
+
+    :param x: x_n.
+    :param r: the bifurcation parameter r.
+    :returns: x_(n+1) for the logistic map
+    """
     return r * x * (1 - x)
 
 
 def logistic_n_steps(
     *, x0: float, r: list[float], n: int, n_skip=0, plot: bool = False
-) -> dict[float, list[float]]:
+) -> tuple[list[float], list[float]]:
+    """
+    Performs n steps of the logistic map for each value in r, and plots the trajectories.
+
+    :param x0: the initial condition of the system.
+    :param r: the bifurcation parameters r. it is a list of all the values of r required.
+    :param n: the number of that will run for each r.
+    :param n_skip: the number of iterations skipped at the start of each r
+    :param plot: set to true if you want to plot the trajectory for each r
+    :returns: A tuple. First value is a list of unskipped x values for each r it is of size
+    of size (n - n_skip) * len(r). The second value is a list of r values for each x.
+    """
     x_vals_all = []
     r_vals_all = []
 
@@ -48,9 +66,14 @@ def logistic_n_steps(
     return r_vals_all, x_vals_all
 
 
-def plot_logistic_bifurcation(
-    x0: float, n: int, n_skip: int, step: float = 0.0001
-) -> None:
+def plot_logistic_bifurcation(x0: float, n: int, n_skip: int) -> None:
+    """
+    Plots the bifurcation diagram for the logistic function
+
+    :param x0: the initial condition of the system.
+    :param n: the number of that will run for each r.
+    :param n_skip: the number of iterations skipped at the start of each r
+    """
     R, X = logistic_n_steps(
         x0=x0, r=np.linspace(0.0, 4.0, 1000), n=n, n_skip=n_skip, plot=False
     )
