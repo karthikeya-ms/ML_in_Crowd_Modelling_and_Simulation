@@ -41,10 +41,10 @@ def plot_phase_portrait(A, X, Y):
     ax0.set_aspect(1)
     return ax0
 
-def create_bifurcation_diagram_1D(f_to_solve: str, min_alpha=-2, max_alpha=2.1, alpha_step=0.1):
+def plot_bifurcation_diagram_1D(fun: str, min_alpha=-2, max_alpha=2.1, alpha_step=0.1):
     """
     Plots the bifurcation diagram of a given function to solve
-    :param f_to_solve: string to represent the function to solve, based on having 'x' as variable
+    :param fun: string to represent the function to solve, based on having 'x' as variable
     """
     x = Symbol('x')
     alphas = np.arange(min_alpha, max_alpha, alpha_step)
@@ -52,7 +52,7 @@ def create_bifurcation_diagram_1D(f_to_solve: str, min_alpha=-2, max_alpha=2.1, 
     fixed_points = {}
     fixed_points_rel_alphas = {}
     for alpha in alphas:
-        sol = solve(eval(f_to_solve), x)
+        sol = solve(eval(fun), x)
         for i, single_sol in enumerate(sol):
             if i not in fixed_points:
                 fixed_points[i] = [single_sol]
@@ -70,5 +70,5 @@ def create_bifurcation_diagram_1D(f_to_solve: str, min_alpha=-2, max_alpha=2.1, 
     plt.xlim(alphas[0], alphas[-1])
     print(alphas[0])
     # plt.ylim(-1, 1)
-    plt.title(f_to_solve)
+    plt.title(fun)
     plt.show()
