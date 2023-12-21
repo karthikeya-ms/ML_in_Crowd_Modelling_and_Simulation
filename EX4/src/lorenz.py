@@ -119,4 +119,5 @@ def plot_lorenz_bifurcation_rho(
     ax3.set_xlabel("rho")
     ax3.set_ylabel("z")
     ax3.set_title("Lorenz System bifurcation Diagram W.R.T. Rho (Z axis)")
-    fig.tight_layout()
+    plt.tight_layout()
+
