@@ -4,6 +4,16 @@ from scipy.integrate import odeint
 
 
 def lorenz(p0, t, sigma, beta, rho):
+    """
+    Calculate the lorenz ODEs for each axis
+
+    :param p0: the initial condition of the system.
+    :param t: the time steps of the system.
+    :param sigma: the sigma parameter for the system
+    :param beta: the beta parameter for the system
+    :param rho: the rho parameter for the system
+    :returns: dx, dy, dz of the system
+    """
     x, y, z = p0
     dx = sigma * (y - x)
     dy = x * (rho - z) - y
@@ -22,6 +32,19 @@ def solve_lorenz(
     plot=True,
     ax=None,
 ):
+    """
+    Solve the Lorenz ODEs and get the 3d points for each time step
+
+    :param p0: the initial condition of the system.
+    :param x_perturb: the amount of perturbation added to the iniitial x.
+    :param t: the time steps of the system.
+    :param sigma: the sigma parameter for the system.
+    :param beta: the beta parameter for the system.
+    :param rho: the rho parameter for the system.
+    :param plot: plot the trajectory of the system.
+    :param ax: the matplotlib axis you want to pass. Leaving it empty will create a new one.
+    :returns: a list of values for each of the 3 dimensions xs, ys, zs, in addition to the list of time steps t.
+    """
     p0_perturb = (p0[0] + x_perturb, p0[1], p0[2])
     sol = odeint(lorenz, p0_perturb, t, args=(sigma, beta, rho))
     xs, ys, zs = sol.T
@@ -56,6 +79,20 @@ def solve_lorenz(
 def plot_trajectory_diff(
     xs_1, ys_1, zs_1, xs_2, ys_2, zs_2, t, ax=None, title="", horizontal=None
 ):
+    """
+    Plot the euclidean distance between two given sets of 3d points w.r.t. time.
+
+    :param xs_1: list of values for the x axis (1st trajectory).
+    :param ys_1:list of values for the y axis (1st trajectory).
+    :param zs_1: list of values for the z axis (1st trajectory).
+    :param xs_2: list of values for the x axis (2nd trajectory).
+    :param ys_2:list of values for the y axis (2nd trajectory).
+    :param zs_2: list of values for the z axis (2nd trajectory).
+    :param ax: the matplotlib axis you want to pass. Leaving it empty will create a new one.
+    :param title: title of the plot.
+    :param horizontal: plot a line in a certain horizontal value. Leave empty to avoid plotting it.
+    :returns: a list of distances foe each time step in t.
+    """
     points_1 = np.vstack([xs_1, ys_1, zs_1]).T
     points_2 = np.vstack([xs_2, ys_2, zs_2]).T
     dist = np.linalg.norm(points_1 - points_2, axis=1)
@@ -83,6 +120,15 @@ def plot_lorenz_bifurcation_rho(
     beta=8 / 3,
     rho=np.arange(0.5, 28.5, 0.5),
 ):
+    """
+    Plot the bifurcation diagram for the lorenz system in each of the three axis.
+
+    :param p0: the initial condition of the system.
+    :param t: the time steps of the system.
+    :param sigma: the sigma parameter for the system.
+    :param beta: the beta parameter for the system.
+    :param rho: the rho parameter for the system.
+    """
     xs_all, ys_all, zs_all, rho_all = [], [], [], []
     for curr_rho in rho:
         xs, ys, zs, ts = solve_lorenz(
@@ -120,4 +166,3 @@ def plot_lorenz_bifurcation_rho(
     ax3.set_ylabel("z")
     ax3.set_title("Lorenz System bifurcation Diagram W.R.T. Rho (Z axis)")
     plt.tight_layout()
-
