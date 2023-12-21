@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from sympy import Symbol, core
+from typing import Tuple
+from sympy.solvers import solve
+
 
 
 def solve_euler(f_ode, y0, time):
@@ -55,3 +59,35 @@ def vectorized_hopf_bifurcation(X1, X2, alpha):
     dx1dt = alpha * X1 - X2 - X1 * (X1**2 + X2**2)
     dx2dt = X1 + alpha * X2 - X2 * (X1**2 + X2**2)
     return dx1dt, dx2dt
+
+def plot_bifurcation_diagram_1D(fun: str, min_alpha=-2, max_alpha=2.1, alpha_step=0.1):
+    """
+    Plots the bifurcation diagram of a given function to solve
+    :param fun: string to represent the function to solve, based on having 'x' as variable
+    """
+    x = Symbol('x')
+    alphas = np.arange(min_alpha, max_alpha, alpha_step)
+    alphas = [round(alpha, 7) for alpha in alphas]
+    fixed_points = {}
+    fixed_points_rel_alphas = {}
+    for alpha in alphas:
+        sol = solve(eval(fun), x)
+        for i, single_sol in enumerate(sol):
+            if i not in fixed_points:
+                fixed_points[i] = [single_sol]
+                fixed_points_rel_alphas[i] = [alpha]
+            else:
+                fixed_points[i].append(single_sol)
+                fixed_points_rel_alphas[i].append(alpha)
+    # postprocessing
+    for i in sorted(fixed_points.keys()):
+        for j in range(len(fixed_points[i])):
+            if not isinstance(fixed_points[i][j], core.numbers.Float) and not isinstance(fixed_points[i][j],
+                                                                                         core.numbers.Integer):
+                fixed_points[i][j] = None
+        plt.scatter(fixed_points_rel_alphas[i], fixed_points[i])
+    plt.xlim(alphas[0], alphas[-1])
+    print(alphas[0])
+    # plt.ylim(-1, 1)
+    plt.title(fun)
+    plt.show()
