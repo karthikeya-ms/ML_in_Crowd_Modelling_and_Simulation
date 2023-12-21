@@ -19,7 +19,7 @@ def solve_euler(f_ode, y0, time):
     return yt, time
 
 
-def plot_phase_portrait(A, X, Y):
+def plot_phase_portrait(A, X, Y, ax):
     """
     Plots a linear vector field in a streamplot, defined with X and Y coordinates and the matrix A.
     """
@@ -27,6 +27,11 @@ def plot_phase_portrait(A, X, Y):
     U = UV[0,:].reshape(X.shape)
     V = UV[1,:].reshape(X.shape)
 
+    # Varying density along a streamline
+    strm = ax.streamplot(X, Y, U, V, density=[0.5, 1])
+    ax.set_aspect(1)
+    return strm
+    """
     fig = plt.figure(figsize=(15, 15))
     gs = gridspec.GridSpec(nrows=3, ncols=2, height_ratios=[1, 1, 2])
 
@@ -36,3 +41,17 @@ def plot_phase_portrait(A, X, Y):
     ax0.set_title('Streamplot for linear vector field A*x');
     ax0.set_aspect(1)
     return ax0
+    """
+
+    #defining the ODE system
+def hopf_bifurcation(t, z, alpha):
+    x1, x2 = z
+    dx1dt = alpha * x1 - x2 - x1 * (x1**2 + x2**2)
+    dx2dt = x1 + alpha * x2 - x2 * (x1**2 + x2**2)
+    return [dx1dt, dx2dt]
+
+# Vectorized version of the hopf_bifurcation function to work with the quiver plot
+def vectorized_hopf_bifurcation(X1, X2, alpha):
+    dx1dt = alpha * X1 - X2 - X1 * (X1**2 + X2**2)
+    dx2dt = X1 + alpha * X2 - X2 * (X1**2 + X2**2)
+    return dx1dt, dx2dt
