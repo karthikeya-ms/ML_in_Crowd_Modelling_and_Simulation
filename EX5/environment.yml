@@ -1,0 +1,11 @@
+name: MLCMS_GroupI_EX5
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - matplotlib
+  - pandas
+  - jupyter
+  - seaborn
+  - scipy
