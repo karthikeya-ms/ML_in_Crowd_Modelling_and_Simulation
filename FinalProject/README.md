@@ -1,34 +1,30 @@
 # Final Project: Present and Implement Neural Network Gaussian Processes
 
-To run this exercise, anaconda is necessary. After installing it, run:
+To run this project, poetry is necessary. After installing it, run:
 
-```sh conda
-conda env create -f environment.yml
-conda activate MLCMS_GroupI_EX5
+```sh 
+poetry install
+poetry shell
 ```
+These first command installs the needed dependencies for the project. The second activates a virtual environment to run the project in
 
 ## Adding Dependencies
 
-To ensure that the `environment.yaml` file is cross-platform, we start with a minimalist environment and only add the dependencies we need.
+To ensure that the `pyproject.toml` file is cross-platform, we start with a minimalist environment and only add the dependencies we need.
 
-To add a package, open the file itself and look for the `dependencies` key. Insert your new dependency in here with, at least, a major version specification (the first number of the version).
+To add a package, run the following command:
 
-## Removing Environment
+```sh
+poetry add <package>
+```
 
-You might want to reinstall the environment from scratch, discoarding your previous environment and replacing it with a fresh environment from `environment.yaml`. To do this, run:
+## Deactivate Environment
+
+To deactivate the environment, simmply run:
 
 ```sh conda
-conda deactivate
-conda env remove --name MLCMS_GroupI_EX5
+exit
 ````
-
-## Creating a Notebook
-
-Create notebooks in the notebooks folder. To import modules developed by the group, all users must place the following import at the beginning of their notebooks:
-
-```python
-import init_notebook
-```
 
 ## Cleaning Notebooks for Git
 

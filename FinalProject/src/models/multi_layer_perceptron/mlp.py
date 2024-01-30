@@ -1,24 +1,18 @@
-import os
-import sys
-
-
-sys.path.append(os.getcwd() + "/src")
-
-from data.data_helpers import random_mini_batches, load_mnist
-from models.multi_layer_perceptron.optimizer import Adam
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from tqdm import tqdm
-from ml_model import MlModel
-from models.multi_layer_perceptron.loss_functions import (
+
+from src.data.data_helpers import load_mnist, random_mini_batches
+from src.models.ml_model import MlModel
+from src.models.multi_layer_perceptron.activations import ReLU, Softmax
+from src.models.multi_layer_perceptron.loss_functions import (
     cross_entropy_loss,
     cross_entropy_loss_backwards,
     l2_regularization_term,
 )
-import pickle
-from activations import ReLU, Sigmoid, Softmax
+from src.models.multi_layer_perceptron.optimizer import Adam
 
 
 class MLP(MlModel):
@@ -181,28 +175,3 @@ class MLP(MlModel):
             self.cache["A" + str(i)] = self.activations[i - 1](self.cache["Z" + str(i)])
 
         return self.cache["A" + str(L)]
-
-
-if __name__ == "__main__":
-    X_train, y_train, X_val, y_val, X_test, y_test = load_mnist(
-        test_size=0.30, validation_size=0.20, OHE=True
-    )
-
-    config = {
-        "lr": 0.001,
-        "batch_size": 32,
-        "epochs": 300,
-        "validation_set": (X_val, y_val),
-        "lr_decay": 0.01,
-        "regularization_parameter": 0.01,
-    }
-
-    model = MLP(
-        input_feature_size=X_train.shape[1],
-        layer_dimensions=[32, 32, 10],
-        activations=[ReLU(), ReLU(), Softmax()],
-        config=config,
-    )
-
-    model.train(X_train, y_train)
-    # model.save_parameters("src/mlp_parameters")
