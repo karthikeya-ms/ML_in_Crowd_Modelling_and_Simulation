@@ -6,7 +6,7 @@ authors = ["Ahmed Mokhtar <ahmed.ashraf.mokhtar@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.12"
 numpy = "^1.26.3"
 matplotlib = "^3.8.2"
 pandas = "^2.2.0"
@@ -15,6 +15,7 @@ seaborn = "^0.13.2"
 scipy = "^1.12.0"
 scikit-learn = "^1.4.0"
 tqdm = "^4.66.1"
+tensorflow = "^2.13.0"
 
 
 [build-system]

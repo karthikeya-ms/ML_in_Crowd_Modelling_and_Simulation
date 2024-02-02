@@ -1,26 +1,26 @@
 import numpy as np
-from sklearn.datasets import load_digits
+from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
 
-def load_mnist(*, test_size, validation_size, OHE=False):
-    # X.shape = (1797, 64), y.shape = (1797,)
-    X, y = load_digits(return_X_y=True)
-    X /= 255
-    y = y.reshape(-1, 1)
+def load_mnist(*, validation_size, OHE=False):
+    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    X_train = X_train / 255.0
+    X_test = X_test / 255.0
+
+    y_train = y_train.reshape(-1, 1)
+    y_test = y_test.reshape(-1, 1)
+
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train, y_train, test_size=validation_size, random_state=7
+    )
 
     if OHE:
         ohe = OneHotEncoder()
-        y = ohe.fit_transform(y).toarray()
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=7
-    )
-
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=validation_size, random_state=7
-    )
+        y_train = ohe.fit_transform(y_train).toarray()
+        y_val = ohe.transform(y_val).toarray()
+        y_test = ohe.transform(y_test).toarray()
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 

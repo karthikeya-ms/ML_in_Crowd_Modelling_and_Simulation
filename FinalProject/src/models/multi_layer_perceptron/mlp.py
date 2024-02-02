@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-from src.data.data_helpers import load_mnist, random_mini_batches
+from src.data.data_helpers import random_mini_batches
 from src.models.ml_model import MlModel
-from src.models.multi_layer_perceptron.activations import ReLU, Softmax
+from src.models.multi_layer_perceptron.activations import Softmax
 from src.models.multi_layer_perceptron.loss_functions import (
     cross_entropy_loss,
     cross_entropy_loss_backwards,
@@ -87,8 +87,9 @@ class MLP(MlModel):
             losses_val.append(validation_loss)
 
         # plot the cost
-        plt.plot(losses_train)
-        plt.plot(losses_val)
+        plt.plot(losses_train, label="Training")
+        plt.plot(losses_val, label="Validation")
+        plt.legend(loc="upper right")
         plt.ylabel("Loss")
         plt.xlabel("Epoch")
         plt.title("Training/Val Loss Curve")

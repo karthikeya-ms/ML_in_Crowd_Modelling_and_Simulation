@@ -5,7 +5,7 @@ import math
 
 def plot_random_mnist_samples(X, n):
     X_size = len(X)
-    images = X.reshape(-1, 8, 8)
+    images = X.reshape(-1, 28, 28)
 
     rng = np.random.default_rng()
     indices = rng.choice(range(X_size), size=n)
