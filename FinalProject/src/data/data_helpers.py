@@ -12,14 +12,18 @@ def load_mnist(*, validation_size, OHE=False):
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=validation_size, random_state=7
-    )
+    X_val = None
+    y_val = None
+    if validation_size > 0:
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train, y_train, test_size=validation_size, random_state=7
+        )
 
     if OHE:
         ohe = OneHotEncoder()
         y_train = ohe.fit_transform(y_train).toarray()
-        y_val = ohe.transform(y_val).toarray()
+        if y_val is not None:
+            y_val = ohe.transform(y_val).toarray()
         y_test = ohe.transform(y_test).toarray()
 
     return X_train, y_train, X_val, y_val, X_test, y_test

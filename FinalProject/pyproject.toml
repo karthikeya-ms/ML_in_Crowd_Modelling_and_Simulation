@@ -16,6 +16,8 @@ scipy = "^1.12.0"
 scikit-learn = "^1.4.0"
 tqdm = "^4.66.1"
 tensorflow = "^2.13.0"
+jax = "^0.4.24"
+neural-tangents = "^0.6.5"
 
 
 [build-system]
