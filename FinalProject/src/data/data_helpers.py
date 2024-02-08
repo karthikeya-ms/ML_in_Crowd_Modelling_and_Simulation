@@ -47,10 +47,34 @@ def load_mnist(*, validation_size, OHE=False):
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
-def forrester_function(x):
+def forrester_function(x: float) -> float:
+    """The Forrester function.
+
+    Args:
+        x (float): The x input to the function.
+
+    Returns:
+        float: The value of the function at x.
+    """
     return np.multiply(np.power((6*x-2),2), np.sin(12*x-4))
 
 def load_forrester(*, begin: float, end: float, noise_variance: float, n_samples: int, validation_size: float =0.2):
+    """
+    Load a random sample of points from the Forrester function.
+
+    Args:
+        begin (float): The begining of the range from which to sample points.
+        end (float): The end of the range from which to sample points.
+        noise_variance (float): The variance to use when adding noise to sampled the points.
+        n_samples (int): The number of points to sample.
+        validation_size (float, optional): The percentage of the points for testing. Defaults to 0.2.
+
+    Returns:
+        - X_train (numpy.ndarray): Training features.
+        - y_train (numpy.ndarray): Training labels.
+        - X_test (numpy.ndarray): Test features.
+        - y_test (numpy.ndarray or None): Test labels.
+    """
     X = np.random.random(size=n_samples) * (end - begin) + begin
     y = forrester_function(X)
 
@@ -61,21 +85,6 @@ def load_forrester(*, begin: float, end: float, noise_variance: float, n_samples
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=validation_size, random_state=7
     )
-
-    return X_train, y_train, X_test, y_test
-
-
-def load_diabetes_sklearn(*, validation_size, random=False):
-    dataset = load_diabetes()
-
-    if random:
-        X_train, X_test, y_train, y_test = train_test_split(
-            dataset['data'], dataset['target'], test_size=validation_size
-        )
-    else:
-        X_train, X_test, y_train, y_test = train_test_split(
-            dataset['data'], dataset['target'], test_size=validation_size, random_state=7
-        )
 
     return X_train, y_train, X_test, y_test
 
