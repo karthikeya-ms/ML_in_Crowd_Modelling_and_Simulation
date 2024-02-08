@@ -1,3 +1,5 @@
+"""Contains the functions concerned with data loading and manipulation."""
+
 import numpy as np
 from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
@@ -6,6 +8,22 @@ from sklearn.datasets import load_diabetes
 
 
 def load_mnist(*, validation_size, OHE=False):
+    """
+    Load the MNIST dataset and preprocess it for training.
+
+    Parameters:
+    - validation_size (float): Proportion of the training data to use for validation. Should be in the range [0, 1],
+    validation set will be None if this value is 0.
+    - OHE (bool): Whether to perform one-hot encoding on the labels. Default is False.
+
+    Returns:
+    - X_train (numpy.ndarray): Training features normalized between 0 and 1.
+    - y_train (numpy.ndarray or None): Training labels, optionally one-hot encoded if OHE is True.
+    - X_val (numpy.ndarray or None): Validation features, only returned if validation_size > 0.
+    - y_val (numpy.ndarray or None): Validation labels, optionally one-hot encoded if OHE is True.
+    - X_test (numpy.ndarray): Test features normalized between 0 and 1.
+    - y_test (numpy.ndarray or None): Test labels, optionally one-hot encoded if OHE is True.
+    """
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
     X_train = X_train / 255.0
     X_test = X_test / 255.0
@@ -13,14 +31,18 @@ def load_mnist(*, validation_size, OHE=False):
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
 
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=validation_size, random_state=7
-    )
+    X_val = None
+    y_val = None
+    if validation_size > 0:
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train, y_train, test_size=validation_size, random_state=7
+        )
 
     if OHE:
         ohe = OneHotEncoder()
         y_train = ohe.fit_transform(y_train).toarray()
-        y_val = ohe.transform(y_val).toarray()
+        if y_val is not None:
+            y_val = ohe.transform(y_val).toarray()
         y_test = ohe.transform(y_test).toarray()
 
     return X_train, y_train, X_val, y_val, X_test, y_test
@@ -59,6 +81,18 @@ def load_diabetes_sklearn(*, validation_size, random=False):
 
 
 def random_mini_batches(X, y, batch_size):
+    """
+    Generate random mini-batches from the input data for stochastic gradient descent.
+
+    Parameters:
+    - X (numpy.ndarray): Input features.
+    - y (numpy.ndarray): Corresponding labels.
+    - batch_size (int): Size of each mini-batch.
+
+    Returns:
+    - mini_batches (list): List of tuples containing mini-batches (X_mini, y_mini).
+      Each tuple represents a mini-batch, and X_mini and y_mini are the features and labels, respectively.
+    """
     rng = np.random.default_rng()
     mini_batches = []
     n = X.shape[0]

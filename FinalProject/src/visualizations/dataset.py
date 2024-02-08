@@ -1,9 +1,21 @@
+"""Contains code related to dataset visualizations."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import math
 
 
 def plot_random_mnist_samples(X, n):
+    """
+    Plot a random selection of MNIST samples.
+
+    Parameters:
+    - X (numpy.ndarray): Input data containing MNIST samples.
+    - n (int): Number of random samples to plot.
+
+    Returns:
+    - None
+    """
     X_size = len(X)
     images = X.reshape(-1, 28, 28)
 

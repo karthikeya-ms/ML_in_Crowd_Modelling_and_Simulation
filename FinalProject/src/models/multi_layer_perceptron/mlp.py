@@ -1,9 +1,9 @@
-import pickle
+"""Contains code related to training and evaluating a multiplayer perceptron."""
 
+import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
-
 from src.data.data_helpers import random_mini_batches
 from src.models.ml_model import MlModel
 from src.models.multi_layer_perceptron.activations import Softmax
@@ -14,17 +14,32 @@ from src.models.multi_layer_perceptron.loss_functions import (
 )
 from src.models.multi_layer_perceptron.optimizer import Adam
 
-
 class MLP(MlModel):
     def __init__(
         self, *, input_feature_size, layer_dimensions, activations, config
     ) -> None:
+        """
+        Initialize the Multi-Layer Perceptron (MLP) model.
+
+        Parameters:
+        - input_feature_size (int): Size of the input features.
+        - layer_dimensions (list): List containing the dimensions of each layer.
+        - activations (list): List of activation functions for each layer.
+        - config (dict): Configuration parameters for training.
+        """
         self.config = config
         self.layer_dimensions = layer_dimensions
         self.activations = activations
         self.parameters = self._initialize_parameters(input_feature_size)
 
     def train(self, X_train, y_train):
+        """
+        Train the MLP model using mini-batch gradient descent. Plots the loss curve at the end.
+
+        Parameters:
+        - X_train (numpy.ndarray): Training input data.
+        - y_train (numpy.ndarray): Training labels.
+        """
         # list of losses
         losses_train = []
         losses_val = []
@@ -96,6 +111,15 @@ class MLP(MlModel):
         plt.show()
 
     def _initialize_parameters(self, input_feature_size):
+        """
+        Initialize model parameters (weights and biases).
+
+        Parameters:
+        - input_feature_size (int): Size of the input features.
+
+        Returns:
+        - dict: Initialized model parameters.
+        """
         rng = np.random.default_rng()
 
         # L = number of layers (not counting input)
@@ -116,6 +140,15 @@ class MLP(MlModel):
         return {"weights": weights, "biases": biases}
 
     def _back_propagation(self, y):
+        """
+        Perform backpropagation to compute gradients.
+
+        Parameters:
+        - y (numpy.ndarray): True labels.
+
+        Returns:
+        - dict: Gradients of the model parameters.
+        """
         W = self.parameters["weights"]
         L = len(W)
         n = y.shape[0]
@@ -148,17 +181,37 @@ class MLP(MlModel):
         return grads
 
     def save_parameters(self, path):
-        # save the learned parameters
+        """
+        Save the learned parameters to a file.
+
+        Parameters:
+        - path (str): File path for saving the parameters.
+        """
         file = open(path, "wb")
         pickle.dump(self.parameters, file)
         file.close()
 
     def load_parameters(self, path):
+        """
+        Load previously saved parameters from a file.
+
+        Parameters:
+        - path (str): File path for loading the parameters.
+        """
         params = pickle.load(open(path, "rb"))
         self.parameters = params
 
     # normal forward prop
     def __call__(self, X):
+        """
+        Forward pass of the MLP model.
+
+        Parameters:
+        - X (numpy.ndarray): Input data.
+
+        Returns:
+        - numpy.ndarray: class probabilities.
+        """
         L = len(self.parameters["weights"])
         W = self.parameters["weights"]
         b = self.parameters["biases"]
