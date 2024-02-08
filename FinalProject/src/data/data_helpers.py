@@ -2,6 +2,7 @@ import numpy as np
 from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.datasets import load_diabetes
 
 
 def load_mnist(*, validation_size, OHE=False):
@@ -23,6 +24,38 @@ def load_mnist(*, validation_size, OHE=False):
         y_test = ohe.transform(y_test).toarray()
 
     return X_train, y_train, X_val, y_val, X_test, y_test
+
+def forrester_function(x):
+    return np.multiply(np.power((6*x-2),2), np.sin(12*x-4))
+
+def load_forrester(*, begin: float, end: float, noise_variance: float, n_samples: int, validation_size: float =0.2):
+    X = np.random.random(size=n_samples) * (end - begin) + begin
+    y = forrester_function(X)
+
+    std_dev = np.sqrt(noise_variance)
+    for i, target in enumerate(y):
+        y[i] = np.random.normal(target, std_dev)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=validation_size, random_state=7
+    )
+
+    return X_train, y_train, X_test, y_test
+
+
+def load_diabetes_sklearn(*, validation_size, random=False):
+    dataset = load_diabetes()
+
+    if random:
+        X_train, X_test, y_train, y_test = train_test_split(
+            dataset['data'], dataset['target'], test_size=validation_size
+        )
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(
+            dataset['data'], dataset['target'], test_size=validation_size, random_state=7
+        )
+
+    return X_train, y_train, X_test, y_test
 
 
 def random_mini_batches(X, y, batch_size):
